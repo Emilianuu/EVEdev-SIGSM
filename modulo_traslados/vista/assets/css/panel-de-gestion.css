@@ -1000,6 +1000,18 @@ body {
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] small,
+[data-theme="dark"] .form-check-description,
+[data-theme="dark"] p.text-muted,
+[data-theme="dark"] .traslado-card small {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .text-primary {
+  color: #c4b5fd !important; /* Lila claro para enlaces en modo oscuro */
+}
+
 /* ── COMPORTAMIENTO COLAPSADO (DESKTOP) ── */
 #sidebar.collapsed {
   width: var(--sidebar-w-sm);
@@ -1089,4 +1101,49 @@ body {
 .badge-tipo {
   font-family: "IBM Plex Mono", monospace;
   letter-spacing: -0.02em;
+}
+
+/* ── CORRECCIONES DE MODO OSCURO PARA MODALES Y DROPDOWNS ── */
+[data-theme="dark"] .modal-content {
+  background-color: var(--hc-panel-dark);
+  border-color: var(--hc-border-dark);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+  border-color: var(--hc-border-dark) !important;
+}
+
+/* Invertir el color de la X de cerrar para que se vea en fondo oscuro */
+[data-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Menús desplegables (Acciones) */
+[data-theme="dark"] .dropdown-menu {
+  background-color: var(--hc-panel-dark);
+  border-color: var(--hc-border-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dropdown-divider {
+  border-color: var(--hc-border-dark);
+}
+
+/* ── CORRECCIÓN PARA CAMPOS SELECT (DESPLEGABLES) EN MODO OSCURO ── */
+[data-theme="dark"] .form-select {
+  background-color: var(--hc-bg-dark);
+  border-color: var(--hc-border-dark);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .form-select option {
+  background-color: var(--hc-panel-dark);
+  color: var(--text-main);
 }

@@ -749,21 +749,6 @@ try {
       <div class="page-title">Configuración</div>
       <div class="row g-4">
         <div class="col-lg-6">
-          <div class="section-card mb-4">
-            <h5>Datos del Funcionario</h5>
-            <div class="mb-3">
-              <label class="form-label fw-bold form-label-custom">Nombre</label>
-              <input class="form-control" value="Admin Usuario" disabled />
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-bold form-label-custom">Rol</label>
-              <input class="form-control" value="Administrativo" disabled />
-            </div>
-            <div class="mb-0">
-              <label class="form-label fw-bold form-label-custom">Sector</label>
-              <input class="form-control" value="Mesa Central / Traslados" disabled />
-            </div>
-          </div>
           <div class="section-card">
             <h5><i class="bi bi-palette"></i> Apariencia</h5>
             <div class="form-check form-switch mb-0">
@@ -773,153 +758,134 @@ try {
             </div>
           </div>
         </div>
-
-        <div class="col-lg-6">
-          <div class="section-card">
-            <h5>Notificaciones y Alertas</h5>
-            <div class="form-check form-switch mb-3">
-              <input class="form-check-input" type="checkbox" checked id="cfg-t1" />
-              <label class="form-check-label form-check-label-custom" for="cfg-t1">Notificar cuando un traslado cambie a "En tránsito"</label>
-            </div>
-            <div class="form-check form-switch mb-3">
-              <input class="form-check-input" type="checkbox" checked id="cfg-t2" />
-              <label class="form-check-label form-check-label-custom" for="cfg-t2">Avisar sobre ambulancias con mantenimiento vencido</label>
-            </div>
-            <div class="form-check form-switch mb-0">
-              <input class="form-check-input" type="checkbox" id="cfg-t3" />
-              <label class="form-check-label form-check-label-custom" for="cfg-t3">Resumen diario de flota por correo</label>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
-  </main>
 
-  <!-- MODAL CONFIRMAR RECHAZO -->
-  <div class="modal fade" id="modalConfirmarRechazo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Rechazo</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          ¿Está seguro que desea rechazar la solicitud <strong id="rechazo-id-text"></strong>? Esta acción cancelará el viaje y no se puede deshacer.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarRechazo">Sí, rechazar solicitud</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL MODIFICAR TRASLADO -->
-  <div class="modal fade" id="modalModificarTraslado" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Modificar Traslado AMB-<span id="mod_title_id"></span></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <form id="formModificarTraslado">
+    <!-- MODAL CONFIRMAR RECHAZO -->
+    <div class="modal fade" id="modalConfirmarRechazo" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Rechazo</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
           <div class="modal-body">
-            <input type="hidden" name="id_traslado" id="mod_id_traslado" />
-            <div class="row g-3">
-              <div class="col-md-12">
-                <label class="form-label fw-bold">Vehículo <span class="text-danger">*</span></label>
-                <select class="form-select" name="vehiculo" id="mod_vehiculo" required>
-                  <?php foreach ($todosVehiculos as $v): ?>
-                    <option value="<?= $v['id_vehiculo'] ?>"><?= htmlspecialchars($v['tipo'] . ' - ' . $v['matricula']) ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Conductor <span class="text-danger">*</span></label>
-                <select class="form-select" name="conductor" id="mod_conductor" required>
-                  <?php foreach ($todosConductores as $c): ?>
-                    <option value="<?= $c['id_personal'] ?>"><?= htmlspecialchars($c['nombre'] . ' ' . $c['apellido']) ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Enfermero</label>
-                <select class="form-select" name="enfermero" id="mod_enfermero">
-                  <option value="">Ninguno / No requiere</option>
-                  <?php foreach ($todosEnfermeros as $e): ?>
-                    <option value="<?= $e['id_personal'] ?>"><?= htmlspecialchars($e['nombre'] . ' ' . $e['apellido']) ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-            </div>
+            ¿Está seguro que desea rechazar la solicitud <strong id="rechazo-id-text"></strong>? Esta acción cancelará el viaje y no se puede deshacer.
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="btnGuardarModificacion"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarRechazo">Sí, rechazar solicitud</button>
           </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL CONFIRMAR CANCELACIÓN DE TRASLADO -->
-  <div class="modal fade" id="modalConfirmarCancelacion" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title"><i class="bi bi-x-octagon-fill me-2"></i> Confirmar Cancelación</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          ¿Está seguro que desea cancelar el traslado <strong>AMB-<span id="cancel-id-text"></span></strong>?<br><br>
-          <small class="text-muted">El viaje pasará a estado "Cancelado" y los recursos asignados quedarán liberados.</small>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar traslado</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL ACTUALIZAR ESTADO Y OBSERVACIONES -->
-  <div class="modal fade" id="modalActualizarEstado" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold text-success"><i class="bi bi-clock-history me-2"></i>Actualizar Estado AMB-<span id="lbl_estado_id"></span></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    <!-- MODAL MODIFICAR TRASLADO -->
+    <div class="modal fade" id="modalModificarTraslado" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Modificar Traslado AMB-<span id="mod_title_id"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <form id="formModificarTraslado">
+            <div class="modal-body">
+              <input type="hidden" name="id_traslado" id="mod_id_traslado" />
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label class="form-label fw-bold">Vehículo <span class="text-danger">*</span></label>
+                  <select class="form-select" name="vehiculo" id="mod_vehiculo" required>
+                    <?php foreach ($todosVehiculos as $v): ?>
+                      <option value="<?= $v['id_vehiculo'] ?>"><?= htmlspecialchars($v['tipo'] . ' - ' . $v['matricula']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Conductor <span class="text-danger">*</span></label>
+                  <select class="form-select" name="conductor" id="mod_conductor" required>
+                    <?php foreach ($todosConductores as $c): ?>
+                      <option value="<?= $c['id_personal'] ?>"><?= htmlspecialchars($c['nombre'] . ' ' . $c['apellido']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Enfermero</label>
+                  <select class="form-select" name="enfermero" id="mod_enfermero">
+                    <option value="">Ninguno / No requiere</option>
+                    <?php foreach ($todosEnfermeros as $e): ?>
+                      <option value="<?= $e['id_personal'] ?>"><?= htmlspecialchars($e['nombre'] . ' ' . $e['apellido']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary" id="btnGuardarModificacion"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+            </div>
+          </form>
         </div>
-        <form id="formActualizarEstado">
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR CANCELACIÓN DE TRASLADO -->
+    <div class="modal fade" id="modalConfirmarCancelacion" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="bi bi-x-octagon-fill me-2"></i> Confirmar Cancelación</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
           <div class="modal-body">
-            <input type="hidden" name="id_traslado" id="estado_id_traslado" />
-            <div class="mb-3">
-              <label class="form-label fw-bold">Nuevo Estado <span class="text-danger">*</span></label>
-              <select class="form-select border-success" name="id_estado" required>
-                <option value="" selected disabled>Seleccione fase del viaje...</option>
-                <option value="2">En Camino / En Tránsito</option>
-                <option value="3">Completado / Llegada a destino</option>
-              </select>
-            </div>
-            <div class="mb-0">
-              <label class="form-label fw-bold">Observaciones <span class="text-danger">*</span></label>
-              <textarea class="form-control" name="observaciones" rows="3" placeholder="Ej: Chofer retiró la nevera térmica con muestras..." required></textarea>
-              <small class="text-muted">Este texto aparecerá debajo del estado en la Línea de Tiempo.</small>
-            </div>
+            ¿Está seguro que desea cancelar el traslado <strong>AMB-<span id="cancel-id-text"></span></strong>?<br><br>
+            <small class="text-muted">El viaje pasará a estado "Cancelado" y los recursos asignados quedarán liberados.</small>
           </div>
-          <div class="modal-footer border-top-0">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success" id="btnGuardarEstado"><i class="bi bi-send-check"></i> Registrar Avance</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar traslado</button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- JavaScript propio -->
-  <script src="../vista/assets/js/panel-de-gestion.js?v=2"></script>
+    <!-- MODAL ACTUALIZAR ESTADO Y OBSERVACIONES -->
+    <div class="modal fade" id="modalActualizarEstado" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-success"><i class="bi bi-clock-history me-2"></i>Actualizar Estado AMB-<span id="lbl_estado_id"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <form id="formActualizarEstado">
+            <div class="modal-body">
+              <input type="hidden" name="id_traslado" id="estado_id_traslado" />
+              <div class="mb-3">
+                <label class="form-label fw-bold">Nuevo Estado <span class="text-danger">*</span></label>
+                <select class="form-select border-success" name="id_estado" required>
+                  <option value="" selected disabled>Seleccione fase del viaje...</option>
+                  <option value="2">En Camino / En Tránsito</option>
+                  <option value="3">Completado / Llegada a destino</option>
+                </select>
+              </div>
+              <div class="mb-0">
+                <label class="form-label fw-bold">Observaciones <span class="text-danger">*</span></label>
+                <textarea class="form-control" name="observaciones" rows="3" placeholder="Ej: Chofer retiró la nevera térmica con muestras..." required></textarea>
+                <small class="text-muted">Este texto aparecerá debajo del estado en la Línea de Tiempo.</small>
+              </div>
+            </div>
+            <div class="modal-footer border-top-0">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-success" id="btnGuardarEstado"><i class="bi bi-send-check"></i> Registrar Avance</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript propio -->
+    <script src="../vista/assets/js/panel-de-gestion.js?v=2"></script>
 </body>
 
 </html>
