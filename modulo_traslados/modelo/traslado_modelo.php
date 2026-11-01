@@ -1,6 +1,6 @@
 <?php
 // modelo/TrasladoModelo.php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/sigsm/servicios_comunes/conexion_BD/conexion.php';
+require_once __DIR__ . '/../../servicios_comunes/conexion_BD/conexion.php';
 
 class TrasladoModelo
 {

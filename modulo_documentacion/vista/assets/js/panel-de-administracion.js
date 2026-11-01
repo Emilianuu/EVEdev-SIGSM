@@ -176,7 +176,7 @@ const statusMeta = {
 let currentDocId = null;
 
 function logout() {
-  location.href = "/sigsm/servicios_comunes/vista_general/index.php";
+  location.href = "../../servicios_comunes/vista_general/index.php";
 }
 
 // ── Sidebar (vistas internas del panel) ─────────────────────────────
@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnBackPortal = document.getElementById("btnBackPortal");
   if (btnBackPortal) {
     btnBackPortal.addEventListener("click", () => {
-      location.href = "/sigsm/servicios_comunes/vista_general/index.php";
+      location.href = "../../servicios_comunes/vista_general/index.php";
     });
   }
 

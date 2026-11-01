@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnLogout = document.getElementById("btnLogout");
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
-      location.href = "/sigsm/servicios_comunes/vista_general/index.php";
+      location.href = "../../servicios_comunes/vista_general/index.php";
     });
   }
 

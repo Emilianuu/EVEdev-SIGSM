@@ -20,7 +20,7 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
 // =======================================================================
 // CARGA DINÁMICA DE RECURSOS DESDE LA BD
 // =======================================================================
-require_once $_SERVER['DOCUMENT_ROOT'] . '/sigsm/servicios_comunes/conexion_BD/conexion.php';
+require_once __DIR__ . '/../../servicios_comunes/conexion_BD/conexion.php';
 
 // Arrays para los selects del formulario
 $vehiculosDisponibles = [];
