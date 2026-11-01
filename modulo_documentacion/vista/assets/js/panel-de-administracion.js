@@ -8,163 +8,40 @@
 // ── Datos fijos de demostración (sin backend) ──────────────────────
 let hcCounter = 4029;
 
-const docs = [
-  {
-    id: "HC-4029",
-    tipo: "Epicrisis de Alta",
-    fecha: "24 Oct 2026, 08:32",
-    estado: "aprobado",
-    tituloVisor: "EPICRISIS MÉDICA DE ALTA",
-    resumenHeading: "Resumen de Egreso",
-    resumenText:
-      "La paciente, de 65 años de edad, habiendo ingresado el día 10 de octubre del corriente por cuadro clínico compatible con afección respiratoria aguda, evoluciona favorablemente bajo tratamiento indicado. Se otorga alta médica con control en policlínica externa.",
-    listHeading: "Prescripciones al Egreso",
-    listItems: [
-      "Amoxicilina 875mg cada 12 horas por 7 días.",
-      "Reposo relativo por 5 días en domicilio.",
-    ],
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Dr. Daniel Muñoz",
-        when: "24 Oct, 08:32",
-        tone: "gray",
-      },
-      {
-        label: "Asignado para Validación de Firma",
-        who: "Depto. Archivo Clínico",
-        when: "24 Oct, 08:35",
-        tone: "amber",
-      },
-      {
-        label: "Documento aprobado",
-        who: "Dr. Daniel Muñoz",
-        when: "24 Oct, 09:10",
-        tone: "green",
-      },
-    ],
-  },
-  {
-    id: "HC-4028",
-    tipo: "Informe Radiológico",
-    fecha: "23 Oct 2026, 15:10",
-    estado: "pendiente",
-    tituloVisor: "INFORME RADIOLÓGICO",
-    resumenHeading: "Hallazgos",
-    resumenText:
-      "Estudio de tórax sin alteraciones pleuroparenquimatosas agudas. Silueta cardíaca de tamaño conservado. Se sugiere control evolutivo según criterio clínico.",
-    listHeading: "Observaciones",
-    listItems: ["Pendiente de firma del médico radiólogo de guardia."],
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Lic. Mesa Central",
-        when: "23 Oct, 15:10",
-        tone: "gray",
-      },
-      {
-        label: "Asignado para Validación de Firma",
-        who: "Depto. Archivo Clínico",
-        when: "23 Oct, 15:12",
-        tone: "amber",
-      },
-    ],
-  },
-  {
-    id: "HC-4027",
-    tipo: "Análisis de Sangre",
-    fecha: "23 Oct 2026, 11:05",
-    estado: "revision",
-    tituloVisor: "ANÁLISIS DE SANGRE",
-    resumenHeading: "Resultados",
-    resumenText:
-      "Hemograma completo y perfil metabólico dentro de parámetros normales. Se adjuntan valores de referencia comparados con estudio previo.",
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Lic. Laboratorio Central",
-        when: "23 Oct, 11:05",
-        tone: "gray",
-      },
-      {
-        label: "En revisión por médico tratante",
-        who: "Dra. Patricia Núñez",
-        when: "23 Oct, 14:20",
-        tone: "amber",
-      },
-    ],
-  },
-  {
-    id: "HC-4026",
-    tipo: "Consentimiento Quirúrgico",
-    fecha: "22 Oct 2026, 18:40",
-    estado: "rechazado",
-    tituloVisor: "CONSENTIMIENTO INFORMADO QUIRÚRGICO",
-    resumenHeading: "Detalle",
-    resumenText:
-      "Formulario de consentimiento para procedimiento quirúrgico programado. Rechazado por falta de firma del segundo testigo requerido por protocolo institucional.",
-    listHeading: "Motivo de rechazo",
-    listItems: [
-      "Falta firma de testigo. Debe reingresarse con el formulario completo.",
-    ],
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Enf. Mesa Central",
-        when: "22 Oct, 18:40",
-        tone: "gray",
-      },
-      {
-        label: "Documento rechazado",
-        who: "Dr. Daniel Muñoz",
-        when: "22 Oct, 19:02",
-        tone: "red",
-      },
-    ],
-  },
-  {
-    id: "HC-4025",
-    tipo: "Historia Clínica",
-    fecha: "22 Oct 2026, 09:15",
-    estado: "aprobado",
-    tituloVisor: "HISTORIA CLÍNICA",
-    resumenHeading: "Resumen",
-    resumenText:
-      "Actualización de historia clínica con antecedentes personales, familiares y evolución de controles periódicos. Sin datos de alarma en la consulta actual.",
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Dr. Daniel Muñoz",
-        when: "22 Oct, 09:15",
-        tone: "gray",
-      },
-      {
-        label: "Documento aprobado",
-        who: "Dr. Daniel Muñoz",
-        when: "22 Oct, 09:40",
-        tone: "green",
-      },
-    ],
-  },
-  {
-    id: "HC-4024",
-    tipo: "Reporte de Guardia",
-    fecha: "21 Oct 2026, 20:03",
-    estado: "pendiente",
-    tituloVisor: "REPORTE DE GUARDIA",
-    resumenHeading: "Resumen de Guardia",
-    resumenText:
-      "Ingreso por guardia con cuadro de dolor abdominal. Se indican estudios complementarios y se deja en observación para reevaluación en las próximas horas.",
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Dr. de Guardia",
-        when: "21 Oct, 20:03",
-        tone: "gray",
-      },
-    ],
-  },
-];
+let docs = [];
+
+async function cargarDocumentosServidor() {
+  try {
+    // Hacemos la petición al controlador
+    const response = await fetch(
+      "../controlador/dashboard_controlador.php?accion=listar_documentos",
+    );
+    const result = await response.json();
+
+    if (result.status === "success") {
+      // 3. Mapeamos usando las columnas reales de la base de datos (JOIN con CATEGORIA)
+      docs = result.data.map((dbDoc) => ({
+        id: dbDoc.id_documento,
+        titulo: dbDoc.titulo,
+        tipo: dbDoc.categoria || "Sin categoría", // Tomamos el nombre de la categoría
+        fecha: dbDoc.fecha_carga,
+        estado: dbDoc.activo ? "aprobado" : "rechazado", // Convertimos el 1/0 a estado visual
+        tituloVisor: dbDoc.titulo ? dbDoc.titulo.toUpperCase() : "DOCUMENTO",
+        resumenHeading: "Documento",
+        resumenText: dbDoc.titulo,
+        audit: [],
+      }));
+
+      // 4. Actualizamos las tablas de la interfaz
+      renderDocumentosTable();
+      renderDashboard();
+    } else {
+      console.error("Error al cargar documentos:", result.mensaje);
+    }
+  } catch (error) {
+    console.error("Error de conexión:", error);
+  }
+}
 
 const statusMeta = {
   aprobado: { label: "Aprobado", cls: "badge-green" },
@@ -259,13 +136,19 @@ function renderDashboard() {
   document.getElementById("stat-aprobados").textContent = aprobados;
 
   const tbody = document.getElementById("dash-doc-table");
+
+  // Imprimir el título en la tabla pequeña del inicio
   tbody.innerHTML = docs
     .slice(0, 4)
     .map(
       (d) => `
     <tr class="clickable-doc-row" data-id="${d.id}">
       <td><strong>#${d.id}</strong></td>
-      <td>${d.tipo}</td>
+      <td>
+        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+          ${d.titulo}
+        </div>
+      </td>
       <td>${badgeHtml(d.estado)}</td>
     </tr>`,
     )
@@ -295,6 +178,10 @@ function renderDocumentosTable() {
       (d) => `
     <tr>
       <td><strong>#${d.id}</strong></td>
+      <td>
+        <div style="font-weight: 500;">${d.titulo}</div>
+        <div style="font-size: 0.85em; opacity: 0.7;">${d.tipo}</div>
+      </td>
       <td>${d.tipo}</td>
       <td class="table-cell-date">${d.fecha}</td>
       <td>${badgeHtml(d.estado)}</td>
@@ -312,59 +199,11 @@ function renderDocumentosTable() {
     `Mostrando 1-${docs.length} de ${docs.length} documentos`;
 }
 
-// ── Nuevo Documento ──────────────────────────────────────────────────
-function saveDoc() {
-  const tipo = document.getElementById("nd-tipo").value;
-  const estado = document.getElementById("nd-estado").value;
-  const contenido = document.getElementById("nd-contenido").value.trim();
-
-  if (!tipo) {
-    alert("Seleccione el tipo de documento.");
-    return;
-  }
-
-  hcCounter += 1;
-  const nuevo = {
-    id: `HC-${hcCounter}`,
-    tipo,
-    fecha:
-      new Date().toLocaleDateString("es-UY", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }) +
-      ", " +
-      new Date().toLocaleTimeString("es-UY", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    estado,
-    tituloVisor: tipo.toUpperCase(),
-    resumenHeading: "Contenido",
-    resumenText: contenido || "Sin contenido adicional cargado.",
-    audit: [
-      {
-        label: "Carga de Documento completada",
-        who: "Dr. Daniel Muñoz",
-        when: "recién",
-        tone: "gray",
-      },
-    ],
-  };
-  docs.unshift(nuevo);
-
-  document.getElementById("nd-contenido").value = "";
-  document.getElementById("nd-tipo").value = "";
-  document.getElementById("nd-estado").value = "pendiente";
-
-  showToast("Documento guardado correctamente", "bi-check-circle");
-  setAdminView("view-documentos");
-}
-
 // ── Visualizador de Documento ────────────────────────────────────────
 function openDocumento(id) {
   currentDocId = id;
-  const d = docs.find((x) => x.id === id);
+  // Convertir ID a entero porque desde la BD llega numérico o string numérico
+  const d = docs.find((x) => x.id == id);
   if (!d) return;
 
   document.getElementById("dd-title").textContent = `${d.tipo} (#${d.id})`;
@@ -376,41 +215,73 @@ function openDocumento(id) {
   }
   document.getElementById("dd-content").innerHTML = html;
 
-  renderAudit(d);
   setAdminView("view-documento-detalle");
 }
 
-function renderAudit(d) {
-  document.getElementById("dd-audit").innerHTML = d.audit
-    .map(
-      (a) => `
-    <div class="timeline-item">
-      <div class="timeline-dot ${a.tone}"></div>
-      <div>
-        <p class="timeline-title">${a.label}</p>
-        <p class="timeline-sub">Por ${a.who} — ${a.when}</p>
-      </div>
-    </div>`,
-    )
-    .join("");
-}
-
 function setEstado(id, estado) {
-  const d = docs.find((x) => x.id === id);
+  const d = docs.find((x) => x.id == id);
   if (!d) return;
   d.estado = estado;
-  d.audit.push({
-    label: estado === "aprobado" ? "Documento aprobado" : "Documento rechazado",
-    who: "Dr. Daniel Muñoz",
-    when: "recién",
-    tone: estado === "aprobado" ? "green" : "red",
-  });
-  renderAudit(d);
+
+  // En una versión final, aquí harías un fetch() para actualizar el estado "activo" en MySQL
   renderDashboard();
   showToast(
     estado === "aprobado" ? "Documento aprobado" : "Documento rechazado",
     estado === "aprobado" ? "bi-check-circle" : "bi-x-circle",
   );
+}
+
+// ── Nuevo Documento ──────────────────────────────────────────────────
+async function saveDoc() {
+  // Nota: Para que el guardado funcione 100% con la BD, deberás
+  // actualizar el HTML de esta vista para pedir: "titulo" y "id_categoria"
+  const tipo = document.getElementById("nd-tipo").value; // Lo usaremos temporalmente como título
+  const estado = document.getElementById("nd-estado").value;
+  const contenido = document.getElementById("nd-contenido").value.trim();
+  const fileInput = document.getElementById("hiddenFileInput");
+
+  if (!tipo) {
+    alert("Seleccione el tipo de documento.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("accion", "alta_documento");
+
+  // Adaptamos temporalmente los campos del HTML a los que exige la BD
+  formData.append("titulo", tipo + " - " + contenido.substring(0, 20));
+  formData.append("id_categoria", 1); // Mock temporal de categoría
+  formData.append("archivo_url", "/docs/nuevo_doc.pdf");
+
+  if (fileInput.files.length > 0) {
+    formData.append("archivo", fileInput.files[0]);
+  }
+
+  try {
+    const response = await fetch("../controlador/dashboard_controlador.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      showToast("Documento guardado correctamente", "bi-check-circle");
+
+      document.getElementById("nd-contenido").value = "";
+      document.getElementById("nd-tipo").value = "";
+      document.getElementById("nd-estado").value = "pendiente";
+      if (fileInput) fileInput.value = "";
+
+      cargarDocumentosServidor();
+      setAdminView("view-documentos");
+    } else {
+      alert("Error: " + data.mensaje);
+    }
+  } catch (error) {
+    console.error("Error en la petición:", error);
+    alert("Ocurrió un error al guardar el documento.");
+  }
 }
 
 // ── Generador de Accesos QR ──────────────────────────────────────────
@@ -433,7 +304,7 @@ function generarQr() {
     return;
   }
 
-  const doc = docs.find((d) => d.id === docId);
+  const doc = docs.find((d) => d.id == docId);
 
   document.getElementById("qr-empty").style.display = "none";
   document.getElementById("qr-result").style.display = "block";
@@ -563,6 +434,5 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /* Initialize starting views */
-  renderDashboard();
-  renderDocumentosTable();
+  cargarDocumentosServidor();
 });

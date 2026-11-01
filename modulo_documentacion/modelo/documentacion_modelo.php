@@ -1,0 +1,102 @@
+<?php
+
+class Documento
+{
+    private $conexion;
+
+    // Constructor que recibe la conexión a la base de datos (PDO)
+    public function __construct($db)
+    {
+        $this->conexion = $db;
+    }
+
+    // 1. ALTA DE DOCUMENTOS (Create)
+    // Adaptado a las columnas reales: titulo, archivo_url, id_categoria, id_usuario_carga
+    public function registrarDocumento($titulo, $archivo_url, $id_categoria, $id_usuario_carga)
+    {
+        $sql = "INSERT INTO DOCUMENTO (titulo, archivo_url, id_categoria, id_usuario_carga, fecha_carga, activo) 
+                VALUES (:titulo, :archivo_url, :id_categoria, :id_usuario_carga, NOW(), 1)";
+
+        $stmt = $this->conexion->prepare($sql);
+
+        // La vinculación de parámetros evita ataques de Inyección SQL
+        $stmt->bindParam(':titulo', $titulo);
+        $stmt->bindParam(':archivo_url', $archivo_url);
+        $stmt->bindParam(':id_categoria', $id_categoria, PDO::PARAM_INT);
+        $stmt->bindParam(':id_usuario_carga', $id_usuario_carga, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
+    // 2. LISTADO DE DOCUMENTOS (Read)
+    // Obtiene los documentos uniéndolos con su categoría para mostrar el nombre
+    public function obtenerTodosLosDocumentos()
+    {
+        $sql = "SELECT d.id_documento, d.titulo, d.archivo_url, d.codigo_qr, d.fecha_carga, d.activo, c.nombre AS categoria 
+                FROM DOCUMENTO d
+                JOIN CATEGORIA c ON d.id_categoria = c.id_categoria
+                ORDER BY d.fecha_carga DESC";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute();
+
+        // Retorna los datos como un arreglo asociativo
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // 3. OBTENER UN DOCUMENTO ESPECÍFICO (Para la vista del QR)
+    public function obtenerDocumentoPorId($id_documento)
+    {
+        $sql = "SELECT d.id_documento, d.titulo, d.archivo_url, d.codigo_qr, d.fecha_carga, d.activo, c.nombre AS categoria 
+                FROM DOCUMENTO d
+                JOIN CATEGORIA c ON d.id_categoria = c.id_categoria
+                WHERE d.id_documento = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id', $id_documento, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // 4. ACTUALIZAR CÓDIGO QR (Update)
+    // Función específica para guardar el QR cuando se genere
+    public function actualizarQrDocumento($id_documento, $codigo_qr)
+    {
+        $sql = "UPDATE DOCUMENTO 
+                SET codigo_qr = :codigo_qr 
+                WHERE id_documento = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':codigo_qr', $codigo_qr);
+        $stmt->bindParam(':id', $id_documento, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
+    // 5. BAJA LÓGICA DE DOCUMENTO (Update - Delete alternativo)
+    // En sistemas clínicos es mejor desactivar en lugar de borrar físicamente
+    public function cambiarEstadoDocumento($id_documento, $activo)
+    {
+        $sql = "UPDATE DOCUMENTO 
+                SET activo = :activo 
+                WHERE id_documento = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':activo', $activo, PDO::PARAM_INT);
+        $stmt->bindParam(':id', $id_documento, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
+    // 6. ELIMINACIÓN FÍSICA DE DOCUMENTO (Delete)
+    public function eliminarDocumento($id_documento)
+    {
+        $sql = "DELETE FROM DOCUMENTO WHERE id_documento = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id', $id_documento, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+}

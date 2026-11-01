@@ -308,6 +308,7 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                 <thead>
                   <tr>
                     <th>Código HC</th>
+                    <th>Nombre del Documento</th>
                     <th>Tipo de Documento</th>
                     <th>Fecha de Carga</th>
                     <th>Estado</th>
