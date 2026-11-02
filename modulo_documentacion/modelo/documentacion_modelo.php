@@ -99,4 +99,31 @@ class Documento
 
         return $stmt->execute();
     }
+
+    // 7. EDITAR DOCUMENTO (Update)
+    public function editarDocumento($id_documento, $titulo, $id_categoria, $archivo_url = null)
+    {
+        // Verificamos si vino un archivo nuevo
+        if ($archivo_url !== null) {
+            $sql = "UPDATE DOCUMENTO 
+                    SET titulo = :titulo, id_categoria = :id_categoria, archivo_url = :archivo_url 
+                    WHERE id_documento = :id";
+        } else {
+            // Si no hay archivo nuevo, solo actualizamos los datos de texto
+            $sql = "UPDATE DOCUMENTO 
+                    SET titulo = :titulo, id_categoria = :id_categoria 
+                    WHERE id_documento = :id";
+        }
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':titulo', $titulo);
+        $stmt->bindParam(':id_categoria', $id_categoria, PDO::PARAM_INT);
+        $stmt->bindParam(':id', $id_documento, PDO::PARAM_INT);
+
+        if ($archivo_url !== null) {
+            $stmt->bindParam(':archivo_url', $archivo_url);
+        }
+
+        return $stmt->execute();
+    }
 }

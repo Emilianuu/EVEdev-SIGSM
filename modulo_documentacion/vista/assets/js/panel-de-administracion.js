@@ -24,6 +24,7 @@ async function cargarDocumentosServidor() {
         id: dbDoc.id_documento,
         titulo: dbDoc.titulo,
         tipo: dbDoc.categoria || "Sin categoría",
+        idCategoria: dbDoc.id_categoria,
         fecha: dbDoc.fecha_carga,
         archivoUrl: dbDoc.archivo_url,
         tituloVisor: dbDoc.titulo ? dbDoc.titulo.toUpperCase() : "DOCUMENTO",
@@ -62,6 +63,7 @@ function setAdminView(id) {
     "view-documentos": "Documentos Clínicos",
     "view-nuevo-doc": "Nuevo Documento",
     "view-documento-detalle": "Visualizador de Documento",
+    "view-editar-doc": "Editar Documento",
     "view-generar-qr": "Generador de Accesos QR",
     "view-configuracion": "Configuración",
   };
@@ -469,4 +471,94 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /* Initialize starting views */
   cargarDocumentosServidor();
+
+  /* ── EVENTOS: Editar Documento ────────────────────────────────────────── */
+  const btnEditDoc = document.getElementById("btnEditDoc");
+  if (btnEditDoc) {
+    btnEditDoc.addEventListener("click", () => {
+      const d = docs.find((x) => x.id == currentDocId);
+      if (!d) return;
+
+      // Cargar datos en el formulario
+      document.getElementById("ed-id").value = d.id;
+      document.getElementById("ed-titulo").value = d.titulo;
+
+      // Seleccionar la categoría correcta
+      const selectCat = document.getElementById("ed-categoria");
+      for (let i = 0; i < selectCat.options.length; i++) {
+        if (
+          selectCat.options[i].value == d.idCategoria ||
+          selectCat.options[i].text == d.tipo
+        ) {
+          selectCat.selectedIndex = i;
+          break;
+        }
+      }
+
+      // Reiniciar zona de archivo
+      document.getElementById("hiddenFileInputEd").value = "";
+      document.getElementById("uploadZoneDefaultEd").style.display = "block";
+      document.getElementById("uploadZoneSelectedEd").style.display = "none";
+
+      setAdminView("view-editar-doc");
+    });
+  }
+
+  // Interfaz de subida para Edición
+  const uploadZoneEd = document.getElementById("uploadZoneAreaEd");
+  const fileInputEd = document.getElementById("hiddenFileInputEd");
+  if (uploadZoneEd && fileInputEd) {
+    uploadZoneEd.addEventListener("click", () => fileInputEd.click());
+    fileInputEd.addEventListener("change", function () {
+      if (this.files && this.files.length > 0) {
+        document.getElementById("selectedFileNameEd").textContent =
+          this.files[0].name;
+        document.getElementById("uploadZoneDefaultEd").style.display = "none";
+        document.getElementById("uploadZoneSelectedEd").style.display = "block";
+      } else {
+        document.getElementById("uploadZoneDefaultEd").style.display = "block";
+        document.getElementById("uploadZoneSelectedEd").style.display = "none";
+      }
+    });
+  }
+
+  // Enviar Petición de Edición al Controlador
+  const btnUpdateDoc = document.getElementById("btnUpdateDoc");
+  if (btnUpdateDoc) {
+    btnUpdateDoc.addEventListener("click", async () => {
+      const id = document.getElementById("ed-id").value;
+      const titulo = document.getElementById("ed-titulo").value.trim();
+      const idCat = document.getElementById("ed-categoria").value;
+
+      if (!titulo || !idCat) return alert("Ingrese un título y categoría.");
+
+      const formData = new FormData();
+      formData.append("accion", "editar_documento");
+      formData.append("id_documento", id);
+      formData.append("titulo", titulo);
+      formData.append("id_categoria", idCat);
+
+      // Si subió un archivo nuevo, lo enviamos; si no, PHP dejará el actual
+      if (fileInputEd.files.length > 0)
+        formData.append("archivo", fileInputEd.files[0]);
+
+      try {
+        const response = await fetch(
+          "../controlador/dashboard_controlador.php",
+          { method: "POST", body: formData },
+        );
+        const data = await response.json();
+
+        if (data.status === "success") {
+          showToast("Documento modificado con éxito", "bi-check-circle");
+          await cargarDocumentosServidor(); // Recargamos para traer los datos nuevos
+          openDocumento(id); // Volvemos al visor
+        } else {
+          alert("Error: " + data.mensaje);
+        }
+      } catch (err) {
+        alert("Ocurrió un error de conexión al editar.");
+      }
+    });
+  }
 });

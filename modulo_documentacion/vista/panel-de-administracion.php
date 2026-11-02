@@ -413,6 +413,80 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
           </div>
         </div>
 
+        <!-- ── EDITAR DOCUMENTO ──────────────── -->
+        <div id="view-editar-doc" class="view">
+          <div class="page-header">
+            <div>
+              <h1>Editar Documento</h1>
+              <p class="subtitle">Modifique los datos o reemplace el archivo del documento</p>
+            </div>
+            <button class="btn-hc btn-hc-secondary" onclick="setAdminView('view-documento-detalle')">
+              <i class="bi bi-arrow-left"></i> Volver al Documento
+            </button>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="panel">
+                <div class="panel-header">
+                  <p class="panel-title"><i class="bi bi-pencil-square"></i> Información del Documento</p>
+                </div>
+                <div class="panel-body">
+                  <input type="hidden" id="ed-id" />
+                  <div class="col-md-12 mb-3">
+                    <label class="hc-label">Título del Documento <span class="text-red-asterisk">*</span></label>
+                    <input type="text" class="hc-input" id="ed-titulo" />
+                  </div>
+                  <div class="col-md-12">
+                    <label class="hc-label">Categoría <span class="text-red-asterisk">*</span></label>
+                    <select class="hc-input" id="ed-categoria">
+                      <option value="">Seleccione una categoría</option>
+                      <option value="1">Protocolo</option>
+                      <option value="2">Consentimiento</option>
+                      <option value="3">Instructivo</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="panel mb-3">
+                <div class="panel-header">
+                  <p class="panel-title"><i class="bi bi-paperclip"></i> Reemplazar Archivo (Opcional)</p>
+                </div>
+                <div class="panel-body">
+                  <div class="upload-zone" id="uploadZoneAreaEd">
+                    <div id="uploadZoneDefaultEd">
+                      <i class="bi bi-cloud-upload upload-icon-lg"></i>
+                      <div class="upload-text-bold">Haga clic para nuevo archivo</div>
+                      <div class="upload-text-sm">Opcional. PDF hasta 10 MB</div>
+                    </div>
+                    <div id="uploadZoneSelectedEd" style="display: none;">
+                      <i class="bi bi-file-earmark-pdf-fill" style="font-size: 2.2rem; color: var(--hc-red); display: block; margin-bottom: 10px;"></i>
+                      <div class="upload-text-bold" id="selectedFileNameEd" style="word-break: break-all;">archivo.pdf</div>
+                      <div class="upload-text-sm" style="color: var(--hc-blue); margin-top: 6px;">Haga clic para cambiar</div>
+                    </div>
+                    <input type="file" accept=".pdf" class="hidden-file-input" id="hiddenFileInputEd" />
+                  </div>
+                </div>
+              </div>
+              <div class="info-banner">
+                <i class="bi bi-info-circle"></i> Si no adjunta nada, se mantendrá el PDF original.
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="flex-end-gap">
+                <button class="btn-hc btn-hc-secondary" onclick="setAdminView('view-documento-detalle')">Cancelar</button>
+                <button class="btn-hc btn-hc-primary" id="btnUpdateDoc">
+                  <i class="bi bi-floppy"></i> Actualizar Documento
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ── VISUALIZADOR DE DOCUMENTO ─────────── -->
         <div id="view-documento-detalle" class="view">
           <div class="page-header">
@@ -427,12 +501,15 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
               <h1 id="dd-title">Documento</h1>
             </div>
             <div class="header-actions-flex">
-              <!-- Nuevo botón para volver atrás -->
+
               <button class="btn-hc btn-hc-secondary btn-nav-view" data-view="view-documentos">
                 <i class="bi bi-arrow-left"></i> Volver
               </button>
 
-              <!-- Botón de descargar (pasado a azul primario para resaltarlo) -->
+              <button id="btnEditDoc" class="btn-hc btn-hc-secondary">
+                <i class="bi bi-pencil"></i> Editar
+              </button>
+
               <a id="btnDownloadDoc" href="#" target="_blank" class="btn-hc btn-hc-primary" download>
                 <i class="bi bi-download"></i> Descargar Archivo
               </a>
