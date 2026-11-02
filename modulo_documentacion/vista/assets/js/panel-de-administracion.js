@@ -163,10 +163,17 @@ function renderDocumentosTable() {
         <div style="font-size: 0.85em; opacity: 0.7;">${d.tipo}</div>
       </td>
       <td class="table-cell-date">${d.fecha}</td>
-      <td>
-        <div class="actions flex-end-actions">
-          <button class="btn-hc btn-hc-ghost btn-xs btn-view-doc" title="Ver" data-id="${d.id}"><i class="bi bi-eye"></i></button>
-          <button class="btn-hc btn-hc-ghost btn-xs" title="Descargar"><i class="bi bi-download"></i></button>
+      <td class="text-right">
+        <div class="dropdown">
+          <button class="btn-hc btn-hc-ghost btn-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 4px 10px; font-size: 1.1rem;">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.85rem; border: 1px solid var(--hc-gray-200); border-radius: 8px;">
+            <li><a class="dropdown-item btn-view-doc" href="#" data-id="${d.id}"><i class="bi bi-eye text-primary me-2"></i> Visualizar</a></li>
+            <li><a class="dropdown-item btn-generate-qr" href="#" data-id="${d.id}"><i class="bi bi-qr-code text-success me-2"></i> Generar QR</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item btn-delete-doc text-danger" href="#" data-id="${d.id}"><i class="bi bi-trash me-2"></i> Eliminar</a></li>
+          </ul>
         </div>
       </td>
     </tr>`,
@@ -421,16 +428,87 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /* Events: Documents Interaction via Delegation */
+  let docToDelete = null;
+
   document.addEventListener("click", (e) => {
+    // Clic en la fila del dashboard (minitabla)
     const docRow = e.target.closest(".clickable-doc-row");
     if (docRow) {
       openDocumento(docRow.dataset.id);
     }
+
+    // 1. Acción: Visualizar
     const viewBtn = e.target.closest(".btn-view-doc");
     if (viewBtn) {
+      e.preventDefault();
       openDocumento(viewBtn.dataset.id);
     }
+
+    // 2. Acción: Generar QR (Preparamos el terreno)
+    const qrBtn = e.target.closest(".btn-generate-qr");
+    if (qrBtn) {
+      e.preventDefault();
+      // Por ahora solo mostramos un toast, lo implementaremos en el futuro
+      showToast("Generar QR estará disponible pronto", "bi-tools");
+    }
+
+    // 3. Acción: Eliminar (Abre el Modal)
+    const deleteBtn = e.target.closest(".btn-delete-doc");
+    if (deleteBtn) {
+      e.preventDefault();
+      docToDelete = deleteBtn.dataset.id;
+      const d = docs.find((x) => x.id == docToDelete);
+      // Inyectar el nombre del documento en el texto del modal
+      document.getElementById("deleteDocName").textContent = d
+        ? d.titulo
+        : "este documento";
+      document.getElementById("modalEliminarOverlay").classList.add("open");
+    }
   });
+
+  /* ── Eventos del Modal de Eliminar ── */
+  const btnCancelDelete = document.getElementById("btnCancelDelete");
+  if (btnCancelDelete) {
+    btnCancelDelete.addEventListener("click", () => {
+      document.getElementById("modalEliminarOverlay").classList.remove("open");
+      docToDelete = null;
+    });
+  }
+
+  const btnConfirmDelete = document.getElementById("btnConfirmDelete");
+  if (btnConfirmDelete) {
+    btnConfirmDelete.addEventListener("click", async () => {
+      if (!docToDelete) return;
+
+      const formData = new FormData();
+      formData.append("accion", "eliminar_documento");
+      formData.append("id_documento", docToDelete);
+
+      try {
+        const response = await fetch(
+          "../controlador/dashboard_controlador.php",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const data = await response.json();
+
+        if (data.status === "success") {
+          showToast("Documento eliminado con éxito", "bi-trash");
+          document
+            .getElementById("modalEliminarOverlay")
+            .classList.remove("open");
+          docToDelete = null;
+          cargarDocumentosServidor(); // Recargar tabla automáticamente
+        } else {
+          alert("Error: " + data.mensaje);
+        }
+      } catch (error) {
+        alert("Error de conexión al intentar eliminar.");
+      }
+    });
+  }
 
   /* Events: Upload & Save Docs */
   const btnSaveDocEl = document.getElementById("btnSaveDoc");

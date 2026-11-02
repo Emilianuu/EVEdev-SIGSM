@@ -64,8 +64,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
 
         case 'eliminar_documento':
-            // ... lógica de baja ...
-            echo json_encode(["status" => "success", "mensaje" => "Eliminado."]);
+            require_once '../../servicios_comunes/conexion_BD/conexion.php';
+            require_once '../modelo/documentacion_modelo.php';
+
+            $id_documento = $_POST['id_documento'] ?? '';
+
+            if (empty($id_documento)) {
+                echo json_encode(["status" => "error", "mensaje" => "ID no proporcionado."]);
+                exit();
+            }
+
+            $docModelo = new Documento($conexion);
+
+            // 1. Obtener la ruta del archivo para borrar el PDF físico
+            $documento = $docModelo->obtenerDocumentoPorId($id_documento);
+            if ($documento && !empty($documento['archivo_url'])) {
+                // Si el archivo físico existe en la ruta, lo eliminamos con unlink()
+                if (file_exists($documento['archivo_url'])) {
+                    unlink($documento['archivo_url']);
+                }
+            }
+
+            // 2. Eliminar de la base de datos
+            $resultado = $docModelo->eliminarDocumento($id_documento);
+
+            if ($resultado) {
+                echo json_encode(["status" => "success", "mensaje" => "Documento y archivo eliminados correctamente."]);
+            } else {
+                echo json_encode(["status" => "error", "mensaje" => "Error al eliminar de la base de datos."]);
+            }
             exit();
 
         case 'editar_documento':

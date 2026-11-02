@@ -847,6 +847,19 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
   </div>
   <!-- /app-shell -->
 
+  <!-- ── MODAL PERSONALIZADO DE ELIMINAR ─────────── -->
+  <div class="qr-modal-overlay" id="modalEliminarOverlay">
+    <div class="qr-modal" style="max-width: 400px; padding: 30px;">
+      <i class="bi bi-exclamation-octagon" style="font-size: 3rem; color: var(--hc-red); display: block; margin-bottom: 15px;"></i>
+      <h3 style="margin-bottom: 10px;">¿Eliminar Documento?</h3>
+      <p style="margin-bottom: 25px; color: var(--hc-gray-600);">Está a punto de eliminar el documento <strong id="deleteDocName" style="color: var(--hc-gray-900);"></strong>. Esta acción también borrará el archivo PDF del servidor y no se puede deshacer.</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn-hc btn-hc-secondary" id="btnCancelDelete">Cancelar</button>
+        <button class="btn-hc btn-hc-danger" id="btnConfirmDelete">Sí, Eliminar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="hc-toast" id="toast"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
