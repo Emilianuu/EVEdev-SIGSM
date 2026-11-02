@@ -210,7 +210,6 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                       <tr>
                         <th>ID</th>
                         <th>Tipo de Archivo</th>
-                        <th>Estado</th>
                       </tr>
                     </thead>
                     <tbody id="dash-doc-table"></tbody>
@@ -292,13 +291,6 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                 <option>Historia Clínica</option>
                 <option>Reporte de Guardia</option>
               </select>
-              <select class="hc-input select-sm">
-                <option>Estado: Todos</option>
-                <option>Pendiente</option>
-                <option>En Revisión</option>
-                <option>Aprobado</option>
-                <option>Rechazado</option>
-              </select>
               <button class="btn-hc btn-hc-secondary btn-sm">
                 <i class="bi bi-funnel"></i> Limpiar
               </button>
@@ -308,10 +300,8 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                 <thead>
                   <tr>
                     <th>Código HC</th>
-                    <th>Nombre del Documento</th>
-                    <th>Tipo de Documento</th>
+                    <th>Nombre y Tipo de Documento</th>
                     <th>Fecha de Carga</th>
-                    <th>Estado</th>
                     <th class="text-right">Acciones</th>
                   </tr>
                 </thead>
@@ -358,38 +348,24 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                   </p>
                 </div>
                 <div class="panel-body">
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="hc-label">Tipo de Documento
-                        <span class="text-red-asterisk">*</span></label>
-                      <select class="hc-input" id="nd-tipo">
-                        <option value="">Seleccione un tipo</option>
-                        <option>Epicrisis de Alta</option>
-                        <option>Informe Radiológico</option>
-                        <option>Análisis de Sangre</option>
-                        <option>Consentimiento Quirúrgico</option>
-                        <option>Historia Clínica</option>
-                        <option>Reporte de Guardia</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="hc-label">Estado inicial</label>
-                      <select class="hc-input" id="nd-estado">
-                        <option value="pendiente">Pendiente</option>
-                        <option value="revision">En Revisión</option>
-                      </select>
-                    </div>
-                    <div class="col-12">
-                      <label class="hc-label">Contenido del Documento</label>
-                      <textarea
-                        class="hc-input hc-textarea hc-textarea-large"
-                        id="nd-contenido"
-                        placeholder="Ingrese el resumen clínico o contenido del documento..."></textarea>
-                    </div>
+                  <div class="col-md-12">
+                    <label class="hc-label">Título del Documento <span class="text-red-asterisk">*</span></label>
+                    <input type="text" class="hc-input" id="nd-titulo" placeholder="Ej: Protocolo de traslado UTI" />
+                  </div>
+                  <div class="col-md-12">
+                    <label class="hc-label">Categoría <span class="text-red-asterisk">*</span></label>
+                    <select class="hc-input" id="nd-categoria">
+                      <option value="">Seleccione una categoría</option>
+                      <!-- Estas categorías coinciden con los ID de tu base de datos -->
+                      <option value="1">Protocolo</option>
+                      <option value="2">Consentimiento</option>
+                      <option value="3">Instructivo</option>
+                    </select>
                   </div>
                 </div>
               </div>
             </div>
+
             <div class="col-lg-4">
               <div class="panel mb-3">
                 <div class="panel-header">
@@ -399,16 +375,21 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                 </div>
                 <div class="panel-body">
                   <div class="upload-zone" id="uploadZoneArea">
-                    <i class="bi bi-cloud-upload upload-icon-lg"></i>
-                    <div class="upload-text-bold">
-                      Haga clic para seleccionar
+                    <!-- Estado 1: Sin archivo (Por defecto) -->
+                    <div id="uploadZoneDefault">
+                      <i class="bi bi-cloud-upload upload-icon-lg"></i>
+                      <div class="upload-text-bold">Haga clic para seleccionar</div>
+                      <div class="upload-text-sm">PDF hasta 10 MB</div>
                     </div>
-                    <div class="upload-text-sm">PDF hasta 10 MB</div>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      class="hidden-file-input"
-                      id="hiddenFileInput" />
+
+                    <!-- Estado 2: Con archivo (Oculto inicialmente) -->
+                    <div id="uploadZoneSelected" style="display: none;">
+                      <i class="bi bi-file-earmark-pdf-fill" style="font-size: 2.2rem; color: var(--hc-red); display: block; margin-bottom: 10px;"></i>
+                      <div class="upload-text-bold" id="selectedFileName" style="word-break: break-all;">archivo.pdf</div>
+                      <div class="upload-text-sm" style="color: var(--hc-blue); margin-top: 6px;">Haga clic para cambiar el archivo</div>
+                    </div>
+
+                    <input type="file" accept=".pdf" class="hidden-file-input" id="hiddenFileInput" />
                   </div>
                 </div>
               </div>
@@ -446,15 +427,15 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
               <h1 id="dd-title">Documento</h1>
             </div>
             <div class="header-actions-flex">
-              <button class="btn-hc btn-approve-custom" id="btnApproveDoc">
-                <i class="bi bi-check-lg"></i> Aprobar
+              <!-- Nuevo botón para volver atrás -->
+              <button class="btn-hc btn-hc-secondary btn-nav-view" data-view="view-documentos">
+                <i class="bi bi-arrow-left"></i> Volver
               </button>
-              <button class="btn-hc btn-hc-danger" id="btnRejectDoc">
-                <i class="bi bi-x-lg"></i> Rechazar
-              </button>
-              <button class="btn-hc btn-hc-secondary">
-                <i class="bi bi-download"></i> Descargar
-              </button>
+
+              <!-- Botón de descargar (pasado a azul primario para resaltarlo) -->
+              <a id="btnDownloadDoc" href="#" target="_blank" class="btn-hc btn-hc-primary" download>
+                <i class="bi bi-download"></i> Descargar Archivo
+              </a>
             </div>
           </div>
 
@@ -462,21 +443,23 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
             <div class="col-lg-8">
               <div class="panel">
                 <div class="panel-header">
-                  <p class="panel-title">Visor de Documento Homologado</p>
-                  <span class="page-info-text">Pág 1 de 1</span>
+                  <p class="panel-title">Visor de PDF</p>
                 </div>
+                <!-- Quitamos el padding para que el PDF ocupe el 100% de la caja -->
                 <div class="panel-body">
-                  <div class="viewer-box" id="dd-content"></div>
+                  <div class="viewer-box" id="dd-content" style="height: 650px;">
+                    <!-- El iframe del PDF se inyectará aquí con JS -->
+                  </div>
                 </div>
               </div>
             </div>
             <div class="col-lg-4">
               <div class="panel">
                 <div class="panel-header">
-                  <p class="panel-title">Historial de Auditoría</p>
+                  <p class="panel-title">Información del Documento</p>
                 </div>
                 <div class="panel-body">
-                  <div class="timeline" id="dd-audit"></div>
+                  <div id="dd-info"></div>
                 </div>
               </div>
             </div>

@@ -23,9 +23,9 @@ async function cargarDocumentosServidor() {
       docs = result.data.map((dbDoc) => ({
         id: dbDoc.id_documento,
         titulo: dbDoc.titulo,
-        tipo: dbDoc.categoria || "Sin categoría", // Tomamos el nombre de la categoría
+        tipo: dbDoc.categoria || "Sin categoría",
         fecha: dbDoc.fecha_carga,
-        estado: dbDoc.activo ? "aprobado" : "rechazado", // Convertimos el 1/0 a estado visual
+        archivoUrl: dbDoc.archivo_url,
         tituloVisor: dbDoc.titulo ? dbDoc.titulo.toUpperCase() : "DOCUMENTO",
         resumenHeading: "Documento",
         resumenText: dbDoc.titulo,
@@ -42,13 +42,6 @@ async function cargarDocumentosServidor() {
     console.error("Error de conexión:", error);
   }
 }
-
-const statusMeta = {
-  aprobado: { label: "Aprobado", cls: "badge-green" },
-  pendiente: { label: "Pendiente", cls: "badge-amber" },
-  revision: { label: "En Revisión", cls: "badge-blue" },
-  rechazado: { label: "Rechazado", cls: "badge-red" },
-};
 
 let currentDocId = null;
 
@@ -125,19 +118,9 @@ function closeMobileSidebar() {
 
 // ── Dashboard ────────────────────────────────────────────────────────
 function renderDashboard() {
-  const total = docs.length;
-  const pendientes = docs.filter(
-    (d) => d.estado === "pendiente" || d.estado === "revision",
-  ).length;
-  const aprobados = docs.filter((d) => d.estado === "aprobado").length;
-
-  document.getElementById("stat-total").textContent = total;
-  document.getElementById("stat-pendientes").textContent = pendientes;
-  document.getElementById("stat-aprobados").textContent = aprobados;
+  document.getElementById("stat-total").textContent = docs.length;
 
   const tbody = document.getElementById("dash-doc-table");
-
-  // Imprimir el título en la tabla pequeña del inicio
   tbody.innerHTML = docs
     .slice(0, 4)
     .map(
@@ -149,7 +132,6 @@ function renderDashboard() {
           ${d.titulo}
         </div>
       </td>
-      <td>${badgeHtml(d.estado)}</td>
     </tr>`,
     )
     .join("");
@@ -164,15 +146,11 @@ function renderDashboard() {
     hoy.charAt(0).toUpperCase() + hoy.slice(1);
 }
 
-function badgeHtml(estado) {
-  const m = statusMeta[estado] || statusMeta.pendiente;
-  return `<span class="badge-hc ${m.cls}"><i class="bi bi-circle-fill badge-circle-icon"></i> ${m.label}</span>`;
-}
-
 // ── Documentos Clínicos ─────────────────────────────────────────────
 function renderDocumentosTable() {
   const tbody = document.getElementById("admin-doc-list-table");
   if (!tbody) return;
+
   tbody.innerHTML = docs
     .map(
       (d) => `
@@ -182,9 +160,7 @@ function renderDocumentosTable() {
         <div style="font-weight: 500;">${d.titulo}</div>
         <div style="font-size: 0.85em; opacity: 0.7;">${d.tipo}</div>
       </td>
-      <td>${d.tipo}</td>
       <td class="table-cell-date">${d.fecha}</td>
-      <td>${badgeHtml(d.estado)}</td>
       <td>
         <div class="actions flex-end-actions">
           <button class="btn-hc btn-hc-ghost btn-xs btn-view-doc" title="Ver" data-id="${d.id}"><i class="bi bi-eye"></i></button>
@@ -200,62 +176,113 @@ function renderDocumentosTable() {
 }
 
 // ── Visualizador de Documento ────────────────────────────────────────
-function openDocumento(id) {
+async function openDocumento(id) {
   currentDocId = id;
-  // Convertir ID a entero porque desde la BD llega numérico o string numérico
   const d = docs.find((x) => x.id == id);
   if (!d) return;
 
   document.getElementById("dd-title").textContent = `${d.tipo} (#${d.id})`;
 
-  let html = `<h3>${d.tituloVisor}</h3>`;
-  html += `<h4>${d.resumenHeading}</h4><p>${d.resumenText}</p>`;
-  if (d.listHeading && d.listItems) {
-    html += `<h4>${d.listHeading}</h4><ul>${d.listItems.map((i) => `<li>${i}</li>`).join("")}</ul>`;
-  }
-  document.getElementById("dd-content").innerHTML = html;
+  // 1. Inyectar Información lateral (Se carga instantáneamente)
+  let infoHtml = `
+    <div style="margin-bottom: 1rem;">
+      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Título</span>
+      <p style="margin-top: 4px; font-weight: 500;">${d.titulo}</p>
+    </div>
+    <div style="margin-bottom: 1rem;">
+      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Categoría</span>
+      <p style="margin-top: 4px;">${d.tipo}</p>
+    </div>
+    <div style="margin-bottom: 1rem;">
+      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Fecha de Carga</span>
+      <p style="margin-top: 4px;">${d.fecha}</p>
+    </div>
+  `;
+  document.getElementById("dd-info").innerHTML = infoHtml;
 
+  // 2. Mostrar estado de carga temporal en el visor
+  document.getElementById("dd-content").innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hc-gray-400);">
+      <i class="bi bi-hourglass-split" style="margin-right: 8px;"></i> Comprobando archivo...
+    </div>
+  `;
+
+  // Cambiar la vista inmediatamente
   setAdminView("view-documento-detalle");
-}
 
-function setEstado(id, estado) {
-  const d = docs.find((x) => x.id == id);
-  if (!d) return;
-  d.estado = estado;
+  // Referencia al botón de descarga
+  const btnDownload = document.getElementById("btnDownloadDoc");
 
-  // En una versión final, aquí harías un fetch() para actualizar el estado "activo" en MySQL
-  renderDashboard();
-  showToast(
-    estado === "aprobado" ? "Documento aprobado" : "Documento rechazado",
-    estado === "aprobado" ? "bi-check-circle" : "bi-x-circle",
-  );
+  // 3. Comprobar si el archivo existe en el servidor
+  try {
+    // Hace una petición "HEAD" (solo pide los encabezados, no descarga el archivo completo)
+    const response = await fetch(d.archivoUrl, { method: "HEAD" });
+
+    if (response.ok) {
+      // El archivo EXISTE -> Cargar el iframe
+      let pdfHtml = `
+        <iframe src="${d.archivoUrl}" width="100%" height="100%" style="border: none; display: block; border-radius: 12px;">
+          Su navegador no soporta la visualización de PDFs.
+        </iframe>
+      `;
+      document.getElementById("dd-content").innerHTML = pdfHtml;
+
+      // Habilitar botón de descarga
+      if (btnDownload) {
+        btnDownload.href = d.archivoUrl;
+        btnDownload.style.pointerEvents = "auto";
+        btnDownload.style.opacity = "1";
+      }
+    } else {
+      // El archivo NO EXISTE (Error 404, etc) -> Mostrar interfaz limpia
+      mostrarErrorArchivo();
+    }
+  } catch (error) {
+    // Falla de red -> Mostrar interfaz limpia
+    mostrarErrorArchivo();
+  }
+
+  // Función interna para dibujar el error visual
+  function mostrarErrorArchivo() {
+    document.getElementById("dd-content").innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--hc-gray-500); text-align: center; padding: 2rem;">
+        <i class="bi bi-file-earmark-x" style="font-size: 3.5rem; margin-bottom: 1rem; color: var(--hc-gray-400);"></i>
+        <h4 style="margin: 0 0 8px; color: var(--hc-gray-700); font-weight: 600; font-size: 1.1rem;">Archivo no encontrado</h4>
+        <p style="font-size: 0.85rem; max-width: 320px; margin: 0; line-height: 1.5;">El documento físico no está disponible en el servidor. Puede que no se haya subido correctamente o haya sido eliminado.</p>
+      </div>
+    `;
+
+    // Deshabilitar botón de descarga para evitar errores
+    if (btnDownload) {
+      btnDownload.removeAttribute("href");
+      btnDownload.style.pointerEvents = "none";
+      btnDownload.style.opacity = "0.5";
+    }
+  }
 }
 
 // ── Nuevo Documento ──────────────────────────────────────────────────
 async function saveDoc() {
-  // Nota: Para que el guardado funcione 100% con la BD, deberás
-  // actualizar el HTML de esta vista para pedir: "titulo" y "id_categoria"
-  const tipo = document.getElementById("nd-tipo").value; // Lo usaremos temporalmente como título
-  const estado = document.getElementById("nd-estado").value;
-  const contenido = document.getElementById("nd-contenido").value.trim();
+  const titulo = document.getElementById("nd-titulo").value.trim();
+  const idCategoria = document.getElementById("nd-categoria").value;
   const fileInput = document.getElementById("hiddenFileInput");
 
-  if (!tipo) {
-    alert("Seleccione el tipo de documento.");
+  if (!titulo || !idCategoria) {
+    alert("Por favor, ingrese el título y seleccione una categoría.");
     return;
   }
 
+  if (fileInput.files.length === 0) {
+    alert("Debe adjuntar un archivo PDF.");
+    return;
+  }
+
+  // Empaquetar datos y archivo para envío
   const formData = new FormData();
   formData.append("accion", "alta_documento");
-
-  // Adaptamos temporalmente los campos del HTML a los que exige la BD
-  formData.append("titulo", tipo + " - " + contenido.substring(0, 20));
-  formData.append("id_categoria", 1); // Mock temporal de categoría
-  formData.append("archivo_url", "/docs/nuevo_doc.pdf");
-
-  if (fileInput.files.length > 0) {
-    formData.append("archivo", fileInput.files[0]);
-  }
+  formData.append("titulo", titulo);
+  formData.append("id_categoria", idCategoria);
+  formData.append("archivo", fileInput.files[0]);
 
   try {
     const response = await fetch("../controlador/dashboard_controlador.php", {
@@ -266,13 +293,17 @@ async function saveDoc() {
     const data = await response.json();
 
     if (data.status === "success") {
-      showToast("Documento guardado correctamente", "bi-check-circle");
+      showToast("Documento subido y guardado correctamente", "bi-check-circle");
 
-      document.getElementById("nd-contenido").value = "";
-      document.getElementById("nd-tipo").value = "";
-      document.getElementById("nd-estado").value = "pendiente";
-      if (fileInput) fileInput.value = "";
+      // Limpiar formulario
+      document.getElementById("nd-titulo").value = "";
+      document.getElementById("nd-categoria").value = "";
+      fileInput.value = "";
 
+      document.getElementById("uploadZoneDefault").style.display = "block";
+      document.getElementById("uploadZoneSelected").style.display = "none";
+
+      // Recargar lista y volver
       cargarDocumentosServidor();
       setAdminView("view-documentos");
     } else {
@@ -280,10 +311,9 @@ async function saveDoc() {
     }
   } catch (error) {
     console.error("Error en la petición:", error);
-    alert("Ocurrió un error al guardar el documento.");
+    alert("Ocurrió un error de conexión.");
   }
 }
-
 // ── Generador de Accesos QR ──────────────────────────────────────────
 function initQr() {
   const select = document.getElementById("qr-documento");
@@ -400,30 +430,34 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  /* Events: Document Viewer Action Buttons */
-  const btnApprove = document.getElementById("btnApproveDoc");
-  if (btnApprove) {
-    btnApprove.addEventListener("click", () =>
-      setEstado(currentDocId, "aprobado"),
-    );
-  }
-
-  const btnReject = document.getElementById("btnRejectDoc");
-  if (btnReject) {
-    btnReject.addEventListener("click", () =>
-      setEstado(currentDocId, "rechazado"),
-    );
-  }
-
   /* Events: Upload & Save Docs */
   const btnSaveDocEl = document.getElementById("btnSaveDoc");
   if (btnSaveDocEl) btnSaveDocEl.addEventListener("click", saveDoc);
 
   const uploadZone = document.getElementById("uploadZoneArea");
+  const fileInput = document.getElementById("hiddenFileInput");
+  const zoneDefault = document.getElementById("uploadZoneDefault");
+  const zoneSelected = document.getElementById("uploadZoneSelected");
+  const fileNameDisplay = document.getElementById("selectedFileName");
+
   if (uploadZone) {
     uploadZone.addEventListener("click", function () {
-      const input = document.getElementById("hiddenFileInput");
-      if (input) input.click();
+      if (fileInput) fileInput.click();
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener("change", function () {
+      if (this.files && this.files.length > 0) {
+        // Mostrar estado de archivo seleccionado
+        fileNameDisplay.textContent = this.files[0].name;
+        zoneDefault.style.display = "none";
+        zoneSelected.style.display = "block";
+      } else {
+        // Volver al estado por defecto si se cancela
+        zoneDefault.style.display = "block";
+        zoneSelected.style.display = "none";
+      }
     });
   }
 

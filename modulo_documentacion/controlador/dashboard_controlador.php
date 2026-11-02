@@ -13,9 +13,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     switch ($accion) {
         case 'alta_documento':
-            // ... lógica, validaciones y llamado a la base de datos ...
-            echo json_encode(["status" => "success", "mensaje" => "Guardado."]);
-            exit(); // CLAVE: Corta el script para no imprimir el HTML de abajo
+            require_once '../../servicios_comunes/conexion_BD/conexion.php';
+            require_once '../modelo/documentacion_modelo.php';
+
+            $titulo = $_POST['titulo'] ?? '';
+            $id_categoria = $_POST['id_categoria'] ?? '';
+            $id_usuario = $_SESSION['id_usuario']; // El usuario logueado
+
+            if (empty($titulo) || empty($id_categoria) || empty($_FILES['archivo'])) {
+                echo json_encode(["status" => "error", "mensaje" => "Faltan datos obligatorios."]);
+                exit();
+            }
+
+            $archivo = $_FILES['archivo'];
+
+            // Validar que sea un PDF
+            if ($archivo['type'] !== 'application/pdf') {
+                echo json_encode(["status" => "error", "mensaje" => "Solo se permiten archivos PDF."]);
+                exit();
+            }
+
+            // Crear carpeta si no existe (por seguridad)
+            $directorio_destino = '../archivos/';
+            if (!is_dir($directorio_destino)) {
+                mkdir($directorio_destino, 0777, true);
+            }
+
+            // Generar un nombre único para evitar que se sobreescriban archivos con el mismo nombre
+            $nombre_archivo = time() . "_" . basename($archivo['name']);
+            $ruta_fisica = $directorio_destino . $nombre_archivo;
+
+            // Esta es la ruta relativa que guardaremos en la base de datos
+            $ruta_bd = '../archivos/' . $nombre_archivo;
+
+            // Mover el archivo subido a nuestra carpeta física
+            if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+
+                // Guardar en la base de datos
+                $docModelo = new Documento($conexion);
+                $resultado = $docModelo->registrarDocumento($titulo, $ruta_bd, $id_categoria, $id_usuario);
+
+                if ($resultado) {
+                    echo json_encode(["status" => "success", "mensaje" => "Guardado correctamente."]);
+                } else {
+                    echo json_encode(["status" => "error", "mensaje" => "Error al insertar en la base de datos."]);
+                }
+            } else {
+                echo json_encode(["status" => "error", "mensaje" => "Fallo al mover el archivo en el servidor."]);
+            }
+            exit();
 
         case 'eliminar_documento':
             // ... lógica de baja ...
