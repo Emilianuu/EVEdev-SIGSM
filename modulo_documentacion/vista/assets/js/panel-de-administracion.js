@@ -182,6 +182,9 @@ function renderDocumentosTable(data = docs) {
 
   document.getElementById("doc-count-label").textContent =
     `Mostrando 1-${docs.length} de ${docs.length} documentos`;
+
+  // Llenar el selector de la pestaña Generar QR
+  poblarSelectQR(data);
 }
 
 // ── Visualizador de Documento ────────────────────────────────────────
@@ -192,7 +195,15 @@ async function openDocumento(id) {
 
   document.getElementById("dd-title").textContent = `${d.tipo} (#${d.id})`;
 
-  // 1. Inyectar Información lateral (Se carga instantáneamente)
+  // 1. Definir la URL absoluta e inquebrantable usando la carpeta base
+  const origen = window.location.origin;
+  const rutaProyecto = window.location.pathname.split(
+    "/modulo_documentacion/",
+  )[0];
+  const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?id=${d.id}`;
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${encodeURIComponent(linkPublico)}`;
+
+  // 2. Inyectar Información lateral y el código QR
   let infoHtml = `
     <div style="margin-bottom: 1rem;">
       <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Título</span>
@@ -206,10 +217,16 @@ async function openDocumento(id) {
       <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Fecha de Carga</span>
       <p style="margin-top: 4px;">${d.fecha}</p>
     </div>
+    <hr style="border: 0; border-top: 1px solid var(--hc-gray-200); margin: 1.5rem 0;">
+    <div style="text-align: center;">
+      <span style="display: block; font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Acceso Rápido QR</span>
+      <img src="${qrApiUrl}" alt="QR del Documento" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid var(--hc-gray-200); padding: 8px; background: #fff;">
+      <p style="font-size: 0.75rem; color: var(--hc-gray-400); margin-top: 8px; margin-bottom: 0;">Escanee para acceso público</p>
+    </div>
   `;
   document.getElementById("dd-info").innerHTML = infoHtml;
 
-  // 2. Mostrar estado de carga temporal en el visor
+  // 3. Mostrar estado de carga temporal en el visor
   document.getElementById("dd-content").innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hc-gray-400);">
       <i class="bi bi-hourglass-split" style="margin-right: 8px;"></i> Comprobando archivo...
@@ -444,12 +461,20 @@ document.addEventListener("DOMContentLoaded", function () {
       openDocumento(viewBtn.dataset.id);
     }
 
-    // 2. Acción: Generar QR (Preparamos el terreno)
+    // 2. Acción: Generar QR desde la tabla
     const qrBtn = e.target.closest(".btn-generate-qr");
     if (qrBtn) {
       e.preventDefault();
-      // Por ahora solo mostramos un toast, lo implementaremos en el futuro
-      showToast("Generar QR estará disponible pronto", "bi-tools");
+
+      // Cambiar a la vista del QR
+      setAdminView("view-generar-qr");
+
+      // Seleccionar el documento correcto y simular el clic de generación
+      const selectQR = document.getElementById("qr-documento");
+      if (selectQR) {
+        selectQR.value = qrBtn.dataset.id;
+        document.getElementById("btnGenerarQr").click();
+      }
     }
 
     // 3. Acción: Eliminar (Abre el Modal)
@@ -675,6 +700,64 @@ document.addEventListener("DOMContentLoaded", function () {
       searchInput.value = "";
       filterSelect.value = "";
       renderDocumentosTable(docs); // Volver a mostrar todo
+    });
+  }
+  /* ── EVENTOS: Generador de QR ────────────────────────────────────────── */
+
+  // Función para llenar el <select>
+  window.poblarSelectQR = function (data) {
+    const select = document.getElementById("qr-documento");
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Seleccione un documento...</option>';
+    data.forEach((d) => {
+      const opt = document.createElement("option");
+      opt.value = d.id;
+      opt.textContent = `[HC-${d.id}] ${d.titulo}`;
+      select.appendChild(opt);
+    });
+  };
+
+  // Botón Principal de Generar
+  const btnGenerarQr = document.getElementById("btnGenerarQr");
+  if (btnGenerarQr) {
+    btnGenerarQr.addEventListener("click", () => {
+      const selectDoc = document.getElementById("qr-documento");
+      const docId = selectDoc.value;
+      const selectExp = document.getElementById("qr-expiracion");
+      const expText = selectExp.options[selectExp.selectedIndex].text;
+
+      if (!docId)
+        return showToast(
+          "Por favor, seleccione un documento",
+          "bi-exclamation-triangle",
+        );
+
+      const d = docs.find((x) => x.id == docId);
+      if (!d) return;
+
+      // 1. Definir la URL absoluta e inquebrantable usando la carpeta base
+      const origen = window.location.origin;
+      const rutaProyecto = window.location.pathname.split(
+        "/modulo_documentacion/",
+      )[0];
+      const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?id=${d.id}`;
+
+      // 2. Solicitar imagen a la API
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(linkPublico)}`;
+
+      // 3. Reemplazar el SVG falso por la imagen real
+      const qrContainer = document.querySelector(".qr-result-img-wrapper");
+      qrContainer.innerHTML = `<img src="${qrApiUrl}" alt="QR del Documento" style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px;" />`;
+
+      // 4. Actualizar textos e interfaz
+      document.getElementById("qr-result-doc-title").textContent = d.titulo;
+      document.getElementById("qr-result-desc").textContent = expText;
+
+      document.getElementById("qr-empty").style.display = "none";
+      const qrResult = document.getElementById("qr-result");
+      qrResult.classList.remove("hidden-by-default");
+      qrResult.style.display = "block";
     });
   }
 });

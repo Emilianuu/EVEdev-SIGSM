@@ -741,33 +741,8 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
             </div>
           </div>
           <div class="row g-4">
+            <!-- Columna única para la apariencia -->
             <div class="col-lg-6">
-              <div class="panel mb-4">
-                <div class="panel-header">
-                  <p class="panel-title">Datos de la Cuenta</p>
-                </div>
-                <div class="panel-body">
-                  <div class="mb-3">
-                    <label class="hc-label">Nombre</label>
-                    <input
-                      class="hc-input"
-                      value="Dr. Daniel Muñoz"
-                      disabled />
-                  </div>
-                  <div class="mb-3">
-                    <label class="hc-label">Usuario Institucional</label>
-                    <input
-                      class="hc-input"
-                      value="daniel.munoz@clinicas.edu.uy"
-                      disabled />
-                  </div>
-                  <div class="mb-0">
-                    <label class="hc-label">Rol</label>
-                    <input class="hc-input" value="Administrador" disabled />
-                  </div>
-                </div>
-              </div>
-
               <div class="panel">
                 <div class="panel-header">
                   <p class="panel-title">
@@ -789,40 +764,6 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                       Cambia la interfaz a una paleta de colores oscuros ideal
                       para ambientes de baja luminosidad.
                     </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-6">
-              <div class="panel">
-                <div class="panel-header">
-                  <p class="panel-title">Notificaciones</p>
-                </div>
-                <div class="panel-body">
-                  <div class="form-check form-switch mb-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      checked
-                      id="cfg-1" />
-                    <label class="form-check-label check-label-sm" for="cfg-1">Avisar cuando un documento queda pendiente de
-                      firma</label>
-                  </div>
-                  <div class="form-check form-switch mb-3">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      checked
-                      id="cfg-2" />
-                    <label class="form-check-label check-label-sm" for="cfg-2">Avisar cuando se genera un código QR</label>
-                  </div>
-                  <div class="form-check form-switch mb-0">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="cfg-3" />
-                    <label class="form-check-label check-label-sm" for="cfg-3">Resumen diario por correo</label>
                   </div>
                 </div>
               </div>
@@ -852,7 +793,7 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
   <div class="hc-toast" id="toast"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-  <script src="../vista/assets/js/panel-de-administracion.js?v=2"></script>
+  <script src="../vista/assets/js/panel-de-administracion.js?v=4"></script>
 </body>
 
 </html>
