@@ -279,21 +279,16 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                 <i class="bi bi-search"></i>
                 <input
                   type="text"
+                  id="searchDoc"
                   class="hc-input"
-                  placeholder="Buscar por ID, Tipo o Funcionario..." />
+                  placeholder="Buscar por ID o Título..." />
               </div>
-              <select class="hc-input select-sm">
-                <option>Tipo: Todos</option>
-                <option>Epicrisis de Alta</option>
-                <option>Informe Radiológico</option>
-                <option>Análisis de Sangre</option>
-                <option>Consentimiento Quirúrgico</option>
-                <option>Historia Clínica</option>
-                <option>Reporte de Guardia</option>
+              <select class="hc-input select-sm" id="filterCat">
+                <option value="">Tipo: Todos</option>
+                <option value="Protocolo">Protocolo</option>
+                <option value="Consentimiento">Consentimiento</option>
+                <option value="Instructivo">Instructivo</option>
               </select>
-              <button class="btn-hc btn-hc-secondary btn-sm">
-                <i class="bi bi-funnel"></i> Limpiar
-              </button>
             </div>
             <div class="table-responsive-wrapper">
               <table class="hc-table">
@@ -311,12 +306,6 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
             <div class="panel-footer">
               <span class="doc-count-text" id="doc-count-label"></span>
               <div class="pagination-controls">
-                <button class="btn-hc btn-hc-secondary btn-xs">
-                  Anterior
-                </button>
-                <button class="btn-hc btn-hc-primary btn-xs">
-                  Siguiente
-                </button>
               </div>
             </div>
           </div>

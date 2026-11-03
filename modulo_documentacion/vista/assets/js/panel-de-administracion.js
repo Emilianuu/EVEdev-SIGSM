@@ -149,11 +149,11 @@ function renderDashboard() {
 }
 
 // ── Documentos Clínicos ─────────────────────────────────────────────
-function renderDocumentosTable() {
+function renderDocumentosTable(data = docs) {
   const tbody = document.getElementById("admin-doc-list-table");
   if (!tbody) return;
 
-  tbody.innerHTML = docs
+  tbody.innerHTML = data
     .map(
       (d) => `
     <tr>
@@ -637,6 +637,44 @@ document.addEventListener("DOMContentLoaded", function () {
       } catch (err) {
         alert("Ocurrió un error de conexión al editar.");
       }
+    });
+  }
+  /* ── EVENTOS: Filtros de la Tabla Principal ────────────────────────── */
+  const searchInput = document.getElementById("searchDoc");
+  const filterSelect = document.getElementById("filterCat");
+  const btnClear = document.getElementById("btnClearFilters");
+
+  function aplicarFiltros() {
+    if (!searchInput || !filterSelect) return;
+
+    const textoBusqueda = searchInput.value.toLowerCase().trim();
+    const categoriaFiltro = filterSelect.value;
+
+    const filtrados = docs.filter((d) => {
+      // Coincidencia de texto (en el título o en el ID)
+      const coincideTexto =
+        d.titulo.toLowerCase().includes(textoBusqueda) ||
+        d.id.toString() === textoBusqueda;
+
+      // Coincidencia del selector de categoría
+      const coincideCat = categoriaFiltro === "" || d.tipo === categoriaFiltro;
+
+      return coincideTexto && coincideCat;
+    });
+
+    renderDocumentosTable(filtrados); // Redibujar con los resultados
+  }
+
+  // Escuchar cuando el usuario escribe o cambia el selector
+  if (searchInput) searchInput.addEventListener("input", aplicarFiltros);
+  if (filterSelect) filterSelect.addEventListener("change", aplicarFiltros);
+
+  // Escuchar el botón de Limpiar
+  if (btnClear) {
+    btnClear.addEventListener("click", () => {
+      searchInput.value = "";
+      filterSelect.value = "";
+      renderDocumentosTable(docs); // Volver a mostrar todo
     });
   }
 });
