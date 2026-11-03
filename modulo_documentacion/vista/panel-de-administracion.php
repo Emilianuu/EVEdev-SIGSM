@@ -140,20 +140,16 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
           <div class="page-header">
             <div>
               <h1>
-                Bienvenido, <span id="dash-username"><?php echo htmlspecialchars($nombreSesion); ?></span>
+                Panel Principal
               </h1>
-              <p class="subtitle">
-                Módulo de Gestión de Historias Clínicas y Documentos de
-                Guardia
-              </p>
             </div>
             <span class="badge-hc badge-gray" id="dash-date"></span>
           </div>
 
           <!-- Stat cards -->
           <div class="row g-3 mb-4">
-            <div class="col-xl-3 col-md-6">
-              <div class="stat-card">
+            <div class="col-xl-6 col-md-6">
+              <div class="stat-card btn-nav-view" data-view="view-documentos" style="cursor: pointer;">
                 <p class="stat-label">
                   <i class="bi bi-file-earmark-text"></i> Total Documentos
                 </p>
@@ -161,37 +157,19 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                 <p class="stat-delta">Últimos 30 días</p>
               </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-              <div class="stat-card">
-                <p class="stat-label">
-                  <i class="bi bi-exclamation-circle"></i> Revisión Pendiente
-                </p>
-                <p class="stat-value" id="stat-pendientes">0</p>
-                <p class="stat-delta stat-delta-accent">Requieren firma</p>
-              </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-              <div class="stat-card">
-                <p class="stat-label">
-                  <i class="bi bi-check-circle"></i> Aprobados
-                </p>
-                <p class="stat-value" id="stat-aprobados">0</p>
-                <p class="stat-delta">Validados correctamente</p>
-              </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-              <div class="stat-card">
+            <div class="col-xl-6 col-md-6">
+              <div class="stat-card btn-nav-view" data-view="view-generar-qr" style="cursor: pointer;">
                 <p class="stat-label">
                   <i class="bi bi-qr-code"></i> QR Generados
                 </p>
-                <p class="stat-value" id="stat-qr">1,829</p>
-                <p class="stat-delta">Accesos externos</p>
+                <p class="stat-value" id="stat-qr">0</p>
+                <p class="stat-delta">Accesos externos (sesión actual)</p>
               </div>
             </div>
           </div>
 
           <div class="row g-3">
-            <div class="col-lg-7">
+            <div class="col-12">
               <div class="panel h-100">
                 <div class="panel-header">
                   <p class="panel-title">
@@ -214,42 +192,6 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
                     </thead>
                     <tbody id="dash-doc-table"></tbody>
                   </table>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-5">
-              <div class="panel h-100">
-                <div class="panel-header">
-                  <p class="panel-title">
-                    <i class="bi bi-graph-up"></i> Actividad Semanal
-                  </p>
-                </div>
-                <div class="panel-body">
-                  <div class="sparkline-box">
-                    <svg viewBox="0 0 220 60" preserveAspectRatio="none">
-                      <polyline
-                        points="0,42 30,30 60,38 90,18 120,26 150,10 180,22 220,14"
-                        fill="none"
-                        stroke="var(--hc-blue)"
-                        stroke-width="2.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    </svg>
-                  </div>
-                  <p class="chart-subtitle-text">
-                    142 validaciones promedio diarias
-                  </p>
-                  <p class="section-heading mb-custom-10">
-                    Estado de Servidores
-                  </p>
-                  <div class="server-status-row">
-                    <span class="status-dot"></span> Servicio de Firma
-                    Electrónica OK
-                  </div>
-                  <div class="server-status-row">
-                    <span class="status-dot"></span> Base de datos Hist.
-                    Clínicas OK
-                  </div>
                 </div>
               </div>
             </div>

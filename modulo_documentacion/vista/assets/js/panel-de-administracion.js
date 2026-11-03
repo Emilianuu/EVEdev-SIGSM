@@ -7,6 +7,7 @@
 
 // ── Datos fijos de demostración (sin backend) ──────────────────────
 let hcCounter = 4029;
+let qrCount = 0;
 
 let docs = [];
 
@@ -121,6 +122,7 @@ function closeMobileSidebar() {
 // ── Dashboard ────────────────────────────────────────────────────────
 function renderDashboard() {
   document.getElementById("stat-total").textContent = docs.length;
+  document.getElementById("stat-qr").textContent = qrCount;
 
   const tbody = document.getElementById("dash-doc-table");
   tbody.innerHTML = docs
@@ -356,7 +358,10 @@ function initQr() {
 function generarQr() {
   const docId = document.getElementById("qr-documento").value;
   if (!docId) {
-    alert("Seleccione un documento para generar el código QR.");
+    showToast(
+      "Seleccione un documento para generar el código QR",
+      "bi-exclamation-triangle",
+    );
     return;
   }
 
@@ -370,6 +375,14 @@ function generarQr() {
     `Acceso QR exclusivo para el documento seleccionado`;
 
   showToast("Código QR generado correctamente", "bi-qr-code");
+
+  const qrResult = document.getElementById("qr-result");
+  qrResult.classList.remove("hidden-by-default");
+  qrResult.style.display = "block";
+
+  qrCount++;
+  const statQr = document.getElementById("stat-qr");
+  if (statQr) statQr.textContent = qrCount;
 }
 
 // ── Toast ────────────────────────────────────────────────────────────
