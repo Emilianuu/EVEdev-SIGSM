@@ -114,8 +114,8 @@ class TrasladoModelo
                 // Si ya existe, usamos su ID
                 $id_destino = $ubi['id_ubicacion'];
             } else {
-                // Si no existe, lo creamos al vuelo como ubicación 'EXTERNA'
-                $stmtInsUbi = $conexion->prepare("INSERT INTO UBICACION (nombre, tipo_ubicacion) VALUES (?, 'EXTERNA')");
+                // Si no existe, lo creamos al vuelo con datos válidos para el esquema
+                $stmtInsUbi = $conexion->prepare("INSERT INTO UBICACION (nombre, direccion, tipo_ubicacion) VALUES (?, 'Dirección no especificada', 'OTRO')");
                 $stmtInsUbi->execute([$nombre_destino]);
                 $id_destino = $conexion->lastInsertId();
             }

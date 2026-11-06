@@ -301,6 +301,10 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'No se puede modificar el estado de una solicitud CANCELADA.';
     END IF;
+    IF OLD.estado_solicitud = 'RECHAZADA' AND NEW.estado_solicitud <> 'RECHAZADA' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No se puede modificar el estado de una solicitud RECHAZADA.';
+    END IF;
     IF OLD.estado_solicitud = 'PENDIENTE' AND NEW.estado_solicitud = 'COMPLETADA' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Una solicitud PENDIENTE no puede pasar directamente a COMPLETADA (debe pasar por ASIGNADA).';
