@@ -2,14 +2,16 @@
 require_once '../../servicios_comunes/conexion_BD/conexion.php';
 require_once '../modelo/documentacion_modelo.php';
 
-$id = $_GET['id'] ?? null;
-if (!$id) die("ID inválido.");
+// Ahora leemos el token criptográfico 't' en lugar del 'id' adivinable
+$token = $_GET['t'] ?? null;
+if (!$token) die("Enlace inválido o token no proporcionado.");
 
 $docModelo = new Documento($conexion);
-$documento = $docModelo->obtenerDocumentoPorId($id);
+$documento = $docModelo->obtenerDocumentoPorToken($token);
 
+// Validamos que exista, esté activo y tenga el archivo físico
 if (!$documento || !file_exists($documento['archivo_url'])) {
-    die("El documento físico no se encuentra disponible.");
+    die("El documento físico no se encuentra disponible o fue retirado.");
 }
 ?>
 <!DOCTYPE html>

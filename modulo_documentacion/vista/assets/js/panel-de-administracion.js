@@ -26,6 +26,7 @@ async function cargarDocumentosServidor() {
         idCategoria: dbDoc.id_categoria,
         fecha: dbDoc.fecha_carga,
         archivoUrl: dbDoc.archivo_url,
+        token: dbDoc.codigo_qr,
         tituloVisor: dbDoc.titulo
           ? dbDoc.titulo.toUpperCase()
           : LANG.doc_visor_default || "DOCUMENTO",
@@ -204,7 +205,7 @@ async function openDocumento(id) {
   const rutaProyecto = window.location.pathname.split(
     "/modulo_documentacion/",
   )[0];
-  const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?id=${d.id}`;
+  const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?t=${d.token}`;
   const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${encodeURIComponent(linkPublico)}`;
 
   let infoHtml = `
@@ -730,7 +731,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const rutaProyecto = window.location.pathname.split(
         "/modulo_documentacion/",
       )[0];
-      const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?id=${d.id}`;
+      const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?t=${d.token}`;
 
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(linkPublico)}`;
 

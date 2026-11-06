@@ -11,17 +11,20 @@ class Documento
     }
 
     // 1. ALTA DE DOCUMENTOS (Create)
-    // Adaptado a las columnas reales: titulo, archivo_url, id_categoria, id_usuario_carga
     public function registrarDocumento($titulo, $archivo_url, $id_categoria, $id_usuario_carga)
     {
-        $sql = "INSERT INTO DOCUMENTO (titulo, archivo_url, id_categoria, id_usuario_carga, fecha_carga, activo) 
-                VALUES (:titulo, :archivo_url, :id_categoria, :id_usuario_carga, NOW(), 1)";
+        // Generar un token único, largo e impredecible de 32 caracteres (Ej: 8f3a2b...)
+        $token = bin2hex(random_bytes(16));
+
+        $sql = "INSERT INTO DOCUMENTO (titulo, archivo_url, codigo_qr, id_categoria, id_usuario_carga, fecha_carga, activo) 
+                VALUES (:titulo, :archivo_url, :codigo_qr, :id_categoria, :id_usuario_carga, NOW(), 1)";
 
         $stmt = $this->conexion->prepare($sql);
 
         // La vinculación de parámetros evita ataques de Inyección SQL
         $stmt->bindParam(':titulo', $titulo);
         $stmt->bindParam(':archivo_url', $archivo_url);
+        $stmt->bindParam(':codigo_qr', $token);
         $stmt->bindParam(':id_categoria', $id_categoria, PDO::PARAM_INT);
         $stmt->bindParam(':id_usuario_carga', $id_usuario_carga, PDO::PARAM_INT);
 
@@ -125,5 +128,19 @@ class Documento
         }
 
         return $stmt->execute();
+    }
+    // 8. OBTENER DOCUMENTO POR TOKEN (Para visor público)
+    public function obtenerDocumentoPorToken($token)
+    {
+        $sql = "SELECT d.id_documento, d.titulo, d.archivo_url, d.codigo_qr, d.fecha_carga, d.activo, c.nombre AS categoria 
+                FROM DOCUMENTO d
+                JOIN CATEGORIA c ON d.id_categoria = c.id_categoria
+                WHERE d.codigo_qr = :token AND d.activo = 1";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

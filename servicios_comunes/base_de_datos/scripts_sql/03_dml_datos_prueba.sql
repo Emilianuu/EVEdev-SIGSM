@@ -38,9 +38,9 @@ INSERT INTO CATEGORIA (nombre, descripcion) VALUES
 ('Instructivo',     'Guías de uso para pacientes y personal');
 
 INSERT INTO DOCUMENTO (titulo, archivo_url, codigo_qr, fecha_carga, id_categoria, id_usuario_carga, activo) VALUES
-('Protocolo de traslado de pacientes críticos', '/docs/protocolo_traslado_criticos.pdf', 'QR-0001', '2026-04-01', 1, 1, TRUE),
-('Consentimiento informado de traslado',         '/docs/consentimiento_traslado.pdf',     'QR-0002', '2026-04-02', 2, 1, TRUE),
-('Instructivo para solicitar un traslado (App)', '/docs/instructivo_app.pdf',              'QR-0003', '2026-04-05', 3, 2, TRUE);
+('Protocolo de traslado de pacientes críticos', '/docs/protocolo_traslado_criticos.pdf', '7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c', '2026-04-01', 1, 1, TRUE),
+('Consentimiento informado de traslado',         '/docs/consentimiento_traslado.pdf',     '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d', '2026-04-02', 2, 1, TRUE),
+('Instructivo para solicitar un traslado (App)', '/docs/instructivo_app.pdf',              '9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c', '2026-04-05', 3, 2, TRUE);
 
 -- Registros de PACIENTES (Humanos y Objetos/Materiales)
 INSERT INTO PACIENTE (ci, nombre, apellido, fecha_nacimiento, email, telefono) VALUES
