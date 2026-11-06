@@ -13,35 +13,37 @@ let docs = [];
 
 async function cargarDocumentosServidor() {
   try {
-    // Hacemos la petición al controlador
     const response = await fetch(
       "../controlador/dashboard_controlador.php?accion=listar_documentos",
     );
     const result = await response.json();
 
     if (result.status === "success") {
-      // 3. Mapeamos usando las columnas reales de la base de datos (JOIN con CATEGORIA)
       docs = result.data.map((dbDoc) => ({
         id: dbDoc.id_documento,
         titulo: dbDoc.titulo,
-        tipo: dbDoc.categoria || "Sin categoría",
+        tipo: dbDoc.categoria || LANG.doc_tipo_sin_categoria || "Sin categoría",
         idCategoria: dbDoc.id_categoria,
         fecha: dbDoc.fecha_carga,
         archivoUrl: dbDoc.archivo_url,
-        tituloVisor: dbDoc.titulo ? dbDoc.titulo.toUpperCase() : "DOCUMENTO",
-        resumenHeading: "Documento",
+        tituloVisor: dbDoc.titulo
+          ? dbDoc.titulo.toUpperCase()
+          : LANG.doc_visor_default || "DOCUMENTO",
+        resumenHeading: LANG.doc_resumen_heading || "Documento",
         resumenText: dbDoc.titulo,
         audit: [],
       }));
 
-      // 4. Actualizamos las tablas de la interfaz
       renderDocumentosTable();
       renderDashboard();
     } else {
-      console.error("Error al cargar documentos:", result.mensaje);
+      console.error(
+        LANG.doc_error_cargar || "Error al cargar documentos:",
+        result.mensaje,
+      );
     }
   } catch (error) {
-    console.error("Error de conexión:", error);
+    console.error(LANG.doc_error_conexion || "Error de conexión:", error);
   }
 }
 
@@ -60,13 +62,14 @@ function setAdminView(id) {
   if (target) target.classList.add("active");
 
   const titles = {
-    "view-dashboard": "Panel Principal",
-    "view-documentos": "Documentos Clínicos",
-    "view-nuevo-doc": "Nuevo Documento",
-    "view-documento-detalle": "Visualizador de Documento",
-    "view-editar-doc": "Editar Documento",
-    "view-generar-qr": "Generador de Accesos QR",
-    "view-configuracion": "Configuración",
+    "view-dashboard": LANG.doc_menu_panel || "Panel Principal",
+    "view-documentos": LANG.doc_menu_documentos || "Documentos Clínicos",
+    "view-nuevo-doc": LANG.doc_titulo_nuevo || "Nuevo Documento",
+    "view-documento-detalle":
+      LANG.doc_visor_detalle || "Visualizador de Documento",
+    "view-editar-doc": LANG.doc_titulo_editar || "Editar Documento",
+    "view-generar-qr": LANG.qr_titulo || "Generador de Accesos QR",
+    "view-configuracion": LANG.config_titulo || "Configuración",
   };
   const titleEl = document.getElementById("topbar-title");
   if (titleEl) titleEl.textContent = titles[id] || "";
@@ -140,7 +143,7 @@ function renderDashboard() {
     )
     .join("");
 
-  const hoy = new Date().toLocaleDateString("es-UY", {
+  const hoy = new Date().toLocaleDateString(LANG.lang_code || "es-UY", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -171,10 +174,10 @@ function renderDocumentosTable(data = docs) {
             <i class="bi bi-three-dots-vertical"></i>
           </button>
           <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.85rem; border: 1px solid var(--hc-gray-200); border-radius: 8px;">
-            <li><a class="dropdown-item btn-view-doc" href="#" data-id="${d.id}"><i class="bi bi-eye text-primary me-2"></i> Visualizar</a></li>
-            <li><a class="dropdown-item btn-generate-qr" href="#" data-id="${d.id}"><i class="bi bi-qr-code text-success me-2"></i> Generar QR</a></li>
+            <li><a class="dropdown-item btn-view-doc" href="#" data-id="${d.id}"><i class="bi bi-eye text-primary me-2"></i> ${LANG.doc_btn_visualizar || "Visualizar"}</a></li>
+            <li><a class="dropdown-item btn-generate-qr" href="#" data-id="${d.id}"><i class="bi bi-qr-code text-success me-2"></i> ${LANG.qr_btn_generar || "Generar QR"}</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item btn-delete-doc text-danger" href="#" data-id="${d.id}"><i class="bi bi-trash me-2"></i> Eliminar</a></li>
+            <li><a class="dropdown-item btn-delete-doc text-danger" href="#" data-id="${d.id}"><i class="bi bi-trash me-2"></i> ${LANG.modal_btn_eliminar || "Eliminar"}</a></li>
           </ul>
         </div>
       </td>
@@ -182,10 +185,10 @@ function renderDocumentosTable(data = docs) {
     )
     .join("");
 
-  document.getElementById("doc-count-label").textContent =
-    `Mostrando 1-${docs.length} de ${docs.length} documentos`;
+  document.getElementById("doc-count-label").textContent = (
+    LANG.doc_contador || "Mostrando 1-{total} de {total} documentos"
+  ).replace(/\{total\}/g, docs.length);
 
-  // Llenar el selector de la pestaña Generar QR
   poblarSelectQR(data);
 }
 
@@ -197,7 +200,6 @@ async function openDocumento(id) {
 
   document.getElementById("dd-title").textContent = `${d.tipo} (#${d.id})`;
 
-  // 1. Definir la URL absoluta e inquebrantable usando la carpeta base
   const origen = window.location.origin;
   const rutaProyecto = window.location.pathname.split(
     "/modulo_documentacion/",
@@ -205,82 +207,70 @@ async function openDocumento(id) {
   const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?id=${d.id}`;
   const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${encodeURIComponent(linkPublico)}`;
 
-  // 2. Inyectar Información lateral y el código QR
   let infoHtml = `
     <div style="margin-bottom: 1rem;">
-      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Título</span>
+      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">${LANG.doc_label_titulo || "Título"}</span>
       <p style="margin-top: 4px; font-weight: 500;">${d.titulo}</p>
     </div>
     <div style="margin-bottom: 1rem;">
-      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Categoría</span>
+      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">${LANG.doc_label_categoria || "Categoría"}</span>
       <p style="margin-top: 4px;">${d.tipo}</p>
     </div>
     <div style="margin-bottom: 1rem;">
-      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">Fecha de Carga</span>
+      <span style="font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600;">${LANG.doc_th_fecha_carga || "Fecha de Carga"}</span>
       <p style="margin-top: 4px;">${d.fecha}</p>
     </div>
     <hr style="border: 0; border-top: 1px solid var(--hc-gray-200); margin: 1.5rem 0;">
     <div style="text-align: center;">
-      <span style="display: block; font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Acceso Rápido QR</span>
-      <img src="${qrApiUrl}" alt="QR del Documento" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid var(--hc-gray-200); padding: 8px; background: #fff;">
-      <p style="font-size: 0.75rem; color: var(--hc-gray-400); margin-top: 8px; margin-bottom: 0;">Escanee para acceso público</p>
+      <span style="display: block; font-size: 0.85em; color: var(--hc-gray-500); text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">${LANG.qr_acceso_rapido || "Acceso Rápido QR"}</span>
+      <img src="${qrApiUrl}" alt="QR" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid var(--hc-gray-200); padding: 8px; background: #fff;">
+      <p style="font-size: 0.75rem; color: var(--hc-gray-400); margin-top: 8px; margin-bottom: 0;">${LANG.qr_escanee || "Escanee para acceso público"}</p>
     </div>
   `;
   document.getElementById("dd-info").innerHTML = infoHtml;
 
-  // 3. Mostrar estado de carga temporal en el visor
   document.getElementById("dd-content").innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--hc-gray-400);">
-      <i class="bi bi-hourglass-split" style="margin-right: 8px;"></i> Comprobando archivo...
+      <i class="bi bi-hourglass-split" style="margin-right: 8px;"></i> ${LANG.doc_comprobando || "Comprobando archivo..."}
     </div>
   `;
 
-  // Cambiar la vista inmediatamente
   setAdminView("view-documento-detalle");
 
-  // Referencia al botón de descarga
   const btnDownload = document.getElementById("btnDownloadDoc");
 
-  // 3. Comprobar si el archivo existe en el servidor
   try {
-    // Hace una petición "HEAD" (solo pide los encabezados, no descarga el archivo completo)
     const response = await fetch(d.archivoUrl, { method: "HEAD" });
 
     if (response.ok) {
-      // El archivo EXISTE -> Cargar el iframe
       let pdfHtml = `
         <iframe src="${d.archivoUrl}" width="100%" height="100%" style="border: none; display: block; border-radius: 12px;">
-          Su navegador no soporta la visualización de PDFs.
+          ${LANG.doc_no_soporte_pdf || "Su navegador no soporta la visualización de PDFs."}
         </iframe>
       `;
       document.getElementById("dd-content").innerHTML = pdfHtml;
 
-      // Habilitar botón de descarga
       if (btnDownload) {
         btnDownload.href = d.archivoUrl;
         btnDownload.style.pointerEvents = "auto";
         btnDownload.style.opacity = "1";
       }
     } else {
-      // El archivo NO EXISTE (Error 404, etc) -> Mostrar interfaz limpia
       mostrarErrorArchivo();
     }
   } catch (error) {
-    // Falla de red -> Mostrar interfaz limpia
     mostrarErrorArchivo();
   }
 
-  // Función interna para dibujar el error visual
   function mostrarErrorArchivo() {
     document.getElementById("dd-content").innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--hc-gray-500); text-align: center; padding: 2rem;">
         <i class="bi bi-file-earmark-x" style="font-size: 3.5rem; margin-bottom: 1rem; color: var(--hc-gray-400);"></i>
-        <h4 style="margin: 0 0 8px; color: var(--hc-gray-700); font-weight: 600; font-size: 1.1rem;">Archivo no encontrado</h4>
-        <p style="font-size: 0.85rem; max-width: 320px; margin: 0; line-height: 1.5;">El documento físico no está disponible en el servidor. Puede que no se haya subido correctamente o haya sido eliminado.</p>
+        <h4 style="margin: 0 0 8px; color: var(--hc-gray-700); font-weight: 600; font-size: 1.1rem;">${LANG.doc_error_no_encontrado || "Archivo no encontrado"}</h4>
+        <p style="font-size: 0.85rem; max-width: 320px; margin: 0; line-height: 1.5;">${LANG.doc_error_descripcion || "El documento físico no está disponible en el servidor. Puede que no se haya subido correctamente o haya sido eliminado."}</p>
       </div>
     `;
 
-    // Deshabilitar botón de descarga para evitar errores
     if (btnDownload) {
       btnDownload.removeAttribute("href");
       btnDownload.style.pointerEvents = "none";
@@ -296,16 +286,18 @@ async function saveDoc() {
   const fileInput = document.getElementById("hiddenFileInput");
 
   if (!titulo || !idCategoria) {
-    alert("Por favor, ingrese el título y seleccione una categoría.");
+    alert(
+      LANG.doc_alerta_campos ||
+        "Por favor, ingrese el título y seleccione una categoría.",
+    );
     return;
   }
 
   if (fileInput.files.length === 0) {
-    alert("Debe adjuntar un archivo PDF.");
+    alert(LANG.doc_alerta_archivo || "Debe adjuntar un archivo PDF.");
     return;
   }
 
-  // Empaquetar datos y archivo para envío
   const formData = new FormData();
   formData.append("accion", "alta_documento");
   formData.append("titulo", titulo);
@@ -321,9 +313,11 @@ async function saveDoc() {
     const data = await response.json();
 
     if (data.status === "success") {
-      showToast("Documento subido y guardado correctamente", "bi-check-circle");
+      showToast(
+        LANG.doc_toast_guardado || "Documento subido y guardado correctamente",
+        "bi-check-circle",
+      );
 
-      // Limpiar formulario
       document.getElementById("nd-titulo").value = "";
       document.getElementById("nd-categoria").value = "";
       fileInput.value = "";
@@ -331,22 +325,20 @@ async function saveDoc() {
       document.getElementById("uploadZoneDefault").style.display = "block";
       document.getElementById("uploadZoneSelected").style.display = "none";
 
-      // Recargar lista y volver
       cargarDocumentosServidor();
       setAdminView("view-documentos");
     } else {
-      alert("Error: " + data.mensaje);
+      alert((LANG.msg_error || "Error: ") + data.mensaje);
     }
   } catch (error) {
-    console.error("Error en la petición:", error);
-    alert("Ocurrió un error de conexión.");
+    alert(LANG.doc_error_conexion || "Ocurrió un error de conexión.");
   }
 }
 // ── Generador de Accesos QR ──────────────────────────────────────────
 function initQr() {
   const select = document.getElementById("qr-documento");
   select.innerHTML =
-    `<option value="">Seleccione un documento...</option>` +
+    `<option value="">${LANG.qr_select_doc || "Seleccione un documento..."}</option>` +
     docs
       .map((d) => `<option value="${d.id}">${d.tipo} (#${d.id})</option>`)
       .join("");
@@ -359,7 +351,8 @@ function generarQr() {
   const docId = document.getElementById("qr-documento").value;
   if (!docId) {
     showToast(
-      "Seleccione un documento para generar el código QR",
+      LANG.qr_alerta_seleccione ||
+        "Seleccione un documento para generar el código QR",
       "bi-exclamation-triangle",
     );
     return;
@@ -372,9 +365,13 @@ function generarQr() {
   document.getElementById("qr-result-doc-title").textContent =
     `${doc.tipo} (#${doc.id})`;
   document.getElementById("qr-result-desc").textContent =
+    LANG.qr_acceso_exclusivo ||
     `Acceso QR exclusivo para el documento seleccionado`;
 
-  showToast("Código QR generado correctamente", "bi-qr-code");
+  showToast(
+    LANG.qr_toast_generado || "Código QR generado correctamente",
+    "bi-qr-code",
+  );
 
   const qrResult = document.getElementById("qr-result");
   qrResult.classList.remove("hidden-by-default");
@@ -397,7 +394,6 @@ function showToast(msg, icon) {
 
 // ── Bind Events & Init ────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
-  /* Events: Global App */
   const sidebarOverlay = document.getElementById("sidebar-overlay");
   if (sidebarOverlay) {
     sidebarOverlay.addEventListener("click", closeMobileSidebar);
@@ -416,7 +412,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnLogoutEl = document.getElementById("btnLogout");
   if (btnLogoutEl) btnLogoutEl.addEventListener("click", logout);
 
-  /* Events: Sidebar & Navigation Toggle */
   document.querySelectorAll(".btn-toggle-sidebar").forEach((btn) => {
     btn.addEventListener("click", toggleSidebar);
   });
@@ -428,7 +423,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  /* Events: Config Theme Sincronizado */
   const darkModeToggle = document.getElementById("cfg-darkmode");
   if (darkModeToggle) {
     darkModeToggle.checked = localStorage.getItem("theme") === "dark";
@@ -457,32 +451,24 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /* Events: Documents Interaction via Delegation */
   let docToDelete = null;
 
   document.addEventListener("click", (e) => {
-    // Clic en la fila del dashboard (minitabla)
     const docRow = e.target.closest(".clickable-doc-row");
     if (docRow) {
       openDocumento(docRow.dataset.id);
     }
 
-    // 1. Acción: Visualizar
     const viewBtn = e.target.closest(".btn-view-doc");
     if (viewBtn) {
       e.preventDefault();
       openDocumento(viewBtn.dataset.id);
     }
 
-    // 2. Acción: Generar QR desde la tabla
     const qrBtn = e.target.closest(".btn-generate-qr");
     if (qrBtn) {
       e.preventDefault();
-
-      // Cambiar a la vista del QR
       setAdminView("view-generar-qr");
-
-      // Seleccionar el documento correcto y simular el clic de generación
       const selectQR = document.getElementById("qr-documento");
       if (selectQR) {
         selectQR.value = qrBtn.dataset.id;
@@ -490,21 +476,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // 3. Acción: Eliminar (Abre el Modal)
     const deleteBtn = e.target.closest(".btn-delete-doc");
     if (deleteBtn) {
       e.preventDefault();
       docToDelete = deleteBtn.dataset.id;
       const d = docs.find((x) => x.id == docToDelete);
-      // Inyectar el nombre del documento en el texto del modal
       document.getElementById("deleteDocName").textContent = d
         ? d.titulo
-        : "este documento";
+        : LANG.modal_doc_default || "este documento";
       document.getElementById("modalEliminarOverlay").classList.add("open");
     }
   });
 
-  /* ── Eventos del Modal de Eliminar ── */
   const btnCancelDelete = document.getElementById("btnCancelDelete");
   if (btnCancelDelete) {
     btnCancelDelete.addEventListener("click", () => {
@@ -533,22 +516,27 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = await response.json();
 
         if (data.status === "success") {
-          showToast("Documento eliminado con éxito", "bi-trash");
+          showToast(
+            LANG.modal_toast_eliminado || "Documento eliminado con éxito",
+            "bi-trash",
+          );
           document
             .getElementById("modalEliminarOverlay")
             .classList.remove("open");
           docToDelete = null;
-          cargarDocumentosServidor(); // Recargar tabla automáticamente
+          cargarDocumentosServidor();
         } else {
-          alert("Error: " + data.mensaje);
+          alert((LANG.msg_error || "Error: ") + data.mensaje);
         }
       } catch (error) {
-        alert("Error de conexión al intentar eliminar.");
+        alert(
+          LANG.modal_error_conexion ||
+            "Error de conexión al intentar eliminar.",
+        );
       }
     });
   }
 
-  /* Events: Upload & Save Docs */
   const btnSaveDocEl = document.getElementById("btnSaveDoc");
   if (btnSaveDocEl) btnSaveDocEl.addEventListener("click", saveDoc);
 
@@ -567,39 +555,32 @@ document.addEventListener("DOMContentLoaded", function () {
   if (fileInput) {
     fileInput.addEventListener("change", function () {
       if (this.files && this.files.length > 0) {
-        // Mostrar estado de archivo seleccionado
         fileNameDisplay.textContent = this.files[0].name;
         zoneDefault.style.display = "none";
         zoneSelected.style.display = "block";
       } else {
-        // Volver al estado por defecto si se cancela
         zoneDefault.style.display = "block";
         zoneSelected.style.display = "none";
       }
     });
   }
 
-  /* Events: QR Generator */
   const btnGenQr = document.getElementById("btnGenerarQr");
   if (btnGenQr) {
     btnGenQr.addEventListener("click", generarQr);
   }
 
-  /* Initialize starting views */
   cargarDocumentosServidor();
 
-  /* ── EVENTOS: Editar Documento ────────────────────────────────────────── */
   const btnEditDoc = document.getElementById("btnEditDoc");
   if (btnEditDoc) {
     btnEditDoc.addEventListener("click", () => {
       const d = docs.find((x) => x.id == currentDocId);
       if (!d) return;
 
-      // Cargar datos en el formulario
       document.getElementById("ed-id").value = d.id;
       document.getElementById("ed-titulo").value = d.titulo;
 
-      // Seleccionar la categoría correcta
       const selectCat = document.getElementById("ed-categoria");
       for (let i = 0; i < selectCat.options.length; i++) {
         if (
@@ -611,7 +592,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      // Reiniciar zona de archivo
       document.getElementById("hiddenFileInputEd").value = "";
       document.getElementById("uploadZoneDefaultEd").style.display = "block";
       document.getElementById("uploadZoneSelectedEd").style.display = "none";
@@ -620,7 +600,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Interfaz de subida para Edición
   const uploadZoneEd = document.getElementById("uploadZoneAreaEd");
   const fileInputEd = document.getElementById("hiddenFileInputEd");
   if (uploadZoneEd && fileInputEd) {
@@ -638,7 +617,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Enviar Petición de Edición al Controlador
   const btnUpdateDoc = document.getElementById("btnUpdateDoc");
   if (btnUpdateDoc) {
     btnUpdateDoc.addEventListener("click", async () => {
@@ -646,7 +624,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const titulo = document.getElementById("ed-titulo").value.trim();
       const idCat = document.getElementById("ed-categoria").value;
 
-      if (!titulo || !idCat) return alert("Ingrese un título y categoría.");
+      if (!titulo || !idCat)
+        return alert(
+          LANG.doc_alerta_campos || "Ingrese un título y categoría.",
+        );
 
       const formData = new FormData();
       formData.append("accion", "editar_documento");
@@ -654,7 +635,6 @@ document.addEventListener("DOMContentLoaded", function () {
       formData.append("titulo", titulo);
       formData.append("id_categoria", idCat);
 
-      // Si subió un archivo nuevo, lo enviamos; si no, PHP dejará el actual
       if (fileInputEd.files.length > 0)
         formData.append("archivo", fileInputEd.files[0]);
 
@@ -666,18 +646,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = await response.json();
 
         if (data.status === "success") {
-          showToast("Documento modificado con éxito", "bi-check-circle");
-          await cargarDocumentosServidor(); // Recargamos para traer los datos nuevos
-          openDocumento(id); // Volvemos al visor
+          showToast(
+            LANG.doc_toast_modificado || "Documento modificado con éxito",
+            "bi-check-circle",
+          );
+          await cargarDocumentosServidor();
+          openDocumento(id);
         } else {
-          alert("Error: " + data.mensaje);
+          alert((LANG.msg_error || "Error: ") + data.mensaje);
         }
       } catch (err) {
-        alert("Ocurrió un error de conexión al editar.");
+        alert(
+          LANG.doc_error_editar || "Ocurrió un error de conexión al editar.",
+        );
       }
     });
   }
-  /* ── EVENTOS: Filtros de la Tabla Principal ────────────────────────── */
+
   const searchInput = document.getElementById("searchDoc");
   const filterSelect = document.getElementById("filterCat");
   const btnClear = document.getElementById("btnClearFilters");
@@ -689,40 +674,34 @@ document.addEventListener("DOMContentLoaded", function () {
     const categoriaFiltro = filterSelect.value;
 
     const filtrados = docs.filter((d) => {
-      // Coincidencia de texto (en el título o en el ID)
       const coincideTexto =
         d.titulo.toLowerCase().includes(textoBusqueda) ||
         d.id.toString() === textoBusqueda;
 
-      // Coincidencia del selector de categoría
       const coincideCat = categoriaFiltro === "" || d.tipo === categoriaFiltro;
 
       return coincideTexto && coincideCat;
     });
 
-    renderDocumentosTable(filtrados); // Redibujar con los resultados
+    renderDocumentosTable(filtrados);
   }
 
-  // Escuchar cuando el usuario escribe o cambia el selector
   if (searchInput) searchInput.addEventListener("input", aplicarFiltros);
   if (filterSelect) filterSelect.addEventListener("change", aplicarFiltros);
 
-  // Escuchar el botón de Limpiar
   if (btnClear) {
     btnClear.addEventListener("click", () => {
       searchInput.value = "";
       filterSelect.value = "";
-      renderDocumentosTable(docs); // Volver a mostrar todo
+      renderDocumentosTable(docs);
     });
   }
-  /* ── EVENTOS: Generador de QR ────────────────────────────────────────── */
 
-  // Función para llenar el <select>
   window.poblarSelectQR = function (data) {
     const select = document.getElementById("qr-documento");
     if (!select) return;
 
-    select.innerHTML = '<option value="">Seleccione un documento...</option>';
+    select.innerHTML = `<option value="">${LANG.qr_select_doc || "Seleccione un documento..."}</option>`;
     data.forEach((d) => {
       const opt = document.createElement("option");
       opt.value = d.id;
@@ -731,8 +710,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   };
 
-  // Botón Principal de Generar
-  const btnGenerarQr = document.getElementById("btnGenerarQr");
   if (btnGenerarQr) {
     btnGenerarQr.addEventListener("click", () => {
       const selectDoc = document.getElementById("qr-documento");
@@ -742,28 +719,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!docId)
         return showToast(
-          "Por favor, seleccione un documento",
+          LANG.qr_alerta_seleccione || "Por favor, seleccione un documento",
           "bi-exclamation-triangle",
         );
 
       const d = docs.find((x) => x.id == docId);
       if (!d) return;
 
-      // 1. Definir la URL absoluta e inquebrantable usando la carpeta base
       const origen = window.location.origin;
       const rutaProyecto = window.location.pathname.split(
         "/modulo_documentacion/",
       )[0];
       const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?id=${d.id}`;
 
-      // 2. Solicitar imagen a la API
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(linkPublico)}`;
 
-      // 3. Reemplazar el SVG falso por la imagen real
       const qrContainer = document.querySelector(".qr-result-img-wrapper");
-      qrContainer.innerHTML = `<img src="${qrApiUrl}" alt="QR del Documento" style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px;" />`;
+      qrContainer.innerHTML = `<img src="${qrApiUrl}" alt="QR" style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px;" />`;
 
-      // 4. Actualizar textos e interfaz
       document.getElementById("qr-result-doc-title").textContent = d.titulo;
       document.getElementById("qr-result-desc").textContent = expText;
 

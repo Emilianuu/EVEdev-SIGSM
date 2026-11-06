@@ -3,6 +3,17 @@ if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
+// Cambiar idioma si el usuario presiona un botón (ej: ?lang=en)
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['es', 'en'])) {
+  $_SESSION['idioma'] = $_GET['lang'];
+}
+
+// Definir idioma por defecto (español)
+$idiomaActual = $_SESSION['idioma'] ?? 'es';
+
+// Cargar el diccionario correspondiente
+$lang = require_once "../../servicios_comunes/idiomas/{$idiomaActual}.php";
+
 // Proteger la ruta: si no está logueado, lo mandamos al login
 if (!isset($_SESSION['id_usuario'])) {
   header("Location: ../../servicios_comunes/autenticacion/login_controlador.php");
@@ -114,12 +125,12 @@ try {
 }
 ?>
 <!doctype html>
-<html lang="es">
+<html lang="<?= $idiomaActual ?>">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hospital de Clínicas – Ambulancias y Traslados</title>
+  <title><?= $lang['hospital_nombre'] ?> – <?= $lang['tarjeta_traslados_titulo'] ?></title>
 
   <!-- Bootstrap 5.3 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
@@ -132,48 +143,53 @@ try {
 
   <!-- Estilos propios -->
   <link rel="stylesheet" href="../vista/assets/css/panel-de-gestion.css" />
+
+  <!-- EXPORTAMOS EL IDIOMA PARA JAVASCRIPT -->
+  <script>
+    const LANG = <?= json_encode($lang) ?>;
+  </script>
 </head>
 
 <body>
   <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sidebar-brand">
-      <img src="../../servicios_comunes/vista_general/banner.jpg" alt="Banner Hospital de Clínicas" class="brand-img-normal" />
-      <img src="../../servicios_comunes/vista_general/banner-reducido.jpg" alt="Ícono Hospital de Clínicas" class="brand-img-collapsed" />
+      <img src="../../servicios_comunes/vista_general/banner.jpg" class="brand-img-normal" />
+      <img src="../../servicios_comunes/vista_general/banner-reducido.jpg" class="brand-img-collapsed" />
     </div>
 
-    <div class="sidebar-section-label">Sistema de Gestión</div>
-    <div class="sidebar-label-bold">Ambulancias y Traslados</div>
+    <div class="sidebar-section-label"><?= $lang['traslados_sidebar_seccion'] ?></div>
+    <div class="sidebar-label-bold"><?= $lang['traslados_sidebar_titulo'] ?></div>
 
     <ul class="list-unstyled mb-0 sidebar-menu-list">
       <li class="nav-item-custom">
         <a class="nav-link-custom active" data-view="dashboard" href="#">
-          <i class="bi bi-grid-fill"></i> Panel Principal
+          <i class="bi bi-grid-fill"></i> <?= $lang['traslados_menu_panel'] ?>
         </a>
       </li>
       <li class="nav-item-custom">
         <a class="nav-link-custom" data-view="traslados" href="#">
-          <i class="bi bi-truck"></i> Traslados
+          <i class="bi bi-truck"></i> <?= $lang['traslados_menu_traslados'] ?>
         </a>
       </li>
       <li class="nav-item-custom">
         <a class="nav-link-custom" data-view="nuevo-traslado" href="#">
-          <i class="bi bi-plus-circle"></i> Nuevo Traslado
+          <i class="bi bi-plus-circle"></i> <?= $lang['traslados_menu_nuevo'] ?>
         </a>
       </li>
       <li class="nav-item-custom">
         <a class="nav-link-custom" data-view="seguimiento" href="#">
-          <i class="bi bi-geo-alt-fill"></i> Seguimiento
+          <i class="bi bi-geo-alt-fill"></i> <?= $lang['traslados_menu_seguimiento'] ?>
         </a>
       </li>
       <li class="nav-item-custom">
         <a class="nav-link-custom" data-view="recursos" href="#">
-          <i class="bi bi-gear-fill"></i> Recursos
+          <i class="bi bi-gear-fill"></i> <?= $lang['traslados_menu_recursos'] ?>
         </a>
       </li>
       <li class="nav-item-custom">
         <a class="nav-link-custom" data-view="configuracion" href="#">
-          <i class="bi bi-sliders"></i> Configuración
+          <i class="bi bi-sliders"></i> <?= $lang['traslados_menu_config'] ?>
         </a>
       </li>
     </ul>
@@ -182,7 +198,7 @@ try {
       <div class="avatar-circle"><?php echo $iniciales; ?></div>
       <div class="footer-user-info">
         <div class="avatar-name"><?php echo htmlspecialchars($nombreSesion); ?></div>
-        <div class="avatar-role">Funcionario</div>
+        <div class="avatar-role"><?= $lang['rol_funcionario'] ?></div>
       </div>
     </div>
   </aside>
@@ -194,25 +210,25 @@ try {
         <i class="bi bi-list"></i>
       </button>
       <div class="topbar-breadcrumb">
-        <span class="bc-current" id="topbar-title">Panel Principal</span>
+        <span class="bc-current" id="topbar-title"><?= $lang['traslados_menu_panel'] ?></span>
       </div>
-      <div class="topbar-actions ms-auto">
+      <div class="topbar-actions ms-auto" style="display:flex; align-items:center; gap: 15px;">
         <button class="btn btn-outline-secondary border-0" id="btnLogout" style="padding: 4px 12px; font-size: 0.82rem; font-weight: 600">
-          <i class="bi bi-box-arrow-left"></i> Volver al portal principal
+          <i class="bi bi-box-arrow-left"></i> <?= $lang['btn_volver_portal'] ?>
         </button>
       </div>
     </div>
 
     <!-- DASHBOARD -->
     <section class="view active" id="view-dashboard">
-      <div class="page-title">Panel Principal</div>
+      <div class="page-title"><?= $lang['traslados_menu_panel'] ?></div>
 
       <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
           <div class="dash-card dc-blue" style="cursor: pointer;" onclick="document.querySelector('[data-view=\'traslados\']').click();">
             <div>
               <div class="dc-val" id="dash-traslados-activos"><span class="spinner-border spinner-border-sm"></span></div>
-              <div class="dc-label">Traslados Activos</div>
+              <div class="dc-label"><?= $lang['traslados_dash_activos'] ?></div>
             </div>
             <i class="bi bi-plus-circle"></i>
           </div>
@@ -221,7 +237,7 @@ try {
           <div class="dash-card dc-green" style="cursor: pointer;" onclick="document.querySelector('[data-view=\'recursos\']').click();">
             <div>
               <div class="dc-val"><?= $vehiculosDispCount ?>/<?= $vehiculosTotales ?></div>
-              <div class="dc-label">Vehículos Disponibles</div>
+              <div class="dc-label"><?= $lang['traslados_dash_vehiculos'] ?></div>
             </div>
             <i class="bi bi-truck"></i>
           </div>
@@ -230,7 +246,7 @@ try {
           <div class="dash-card dc-orange" style="cursor: pointer;" onclick="document.querySelector('[data-view=\'recursos\']').click();">
             <div>
               <div class="dc-val"><?= ($conductoresTotales - $conductoresDispCount) + ($enfermerosTotales - $enfermerosDispCount) ?></div>
-              <div class="dc-label">Personal en Servicio</div>
+              <div class="dc-label"><?= $lang['traslados_dash_personal'] ?></div>
             </div>
             <i class="bi bi-person"></i>
           </div>
@@ -239,7 +255,7 @@ try {
           <div class="dash-card dc-purple">
             <div>
               <div class="dc-val" id="dash-traslados-dia"><span class="spinner-border spinner-border-sm"></span></div>
-              <div class="dc-label">Traslados del Día</div>
+              <div class="dc-label"><?= $lang['traslados_dash_dia'] ?></div>
             </div>
             <i class="bi bi-calendar3"></i>
           </div>
@@ -247,10 +263,10 @@ try {
       </div>
 
       <div class="section-card">
-        <h5>Traslados Activos en Curso</h5>
+        <h5><?= $lang['traslados_dash_titulo_activos'] ?></h5>
         <div id="dash-lista-activos">
           <div class="text-center text-muted py-3">
-            <div class="spinner-border spinner-border-sm me-2"></div> Cargando traslados activos...
+            <div class="spinner-border spinner-border-sm me-2"></div> <?= $lang['traslados_cargando_activos'] ?>
           </div>
         </div>
       </div>
@@ -258,34 +274,34 @@ try {
 
     <!-- TRASLADOS -->
     <section class="view" id="view-traslados">
-      <div class="page-title mb-4">Gestión de Traslados y Solicitudes</div>
+      <div class="page-title mb-4"><?= $lang['traslados_titulo_gestion'] ?></div>
 
       <div class="section-card mb-5 py-3 px-4">
         <div class="row align-items-center g-3">
           <div class="col-md-3 text-muted fw-bold">
-            Filtros de búsqueda:
+            <?= $lang['traslados_filtros_busqueda'] ?>
           </div>
           <div class="col-md-4">
             <select id="filtro-estado" class="form-select border-primary">
-              <option value="">Todos los estados</option>
-              <option value="pendiente">Solo Solicitudes Pendientes</option>
-              <option value="asignado">Traslados Asignados (En base)</option>
-              <option value="camino">Traslados En Camino / Tránsito</option>
-              <option value="completado">Traslados Completados</option>
-              <option value="cancelado">Traslados Cancelados</option>
+              <option value=""><?= $lang['traslados_filtro_todos'] ?></option>
+              <option value="pendiente"><?= $lang['traslados_filtro_pendientes'] ?></option>
+              <option value="asignado"><?= $lang['traslados_filtro_asignados'] ?></option>
+              <option value="camino"><?= $lang['traslados_filtro_camino'] ?></option>
+              <option value="completado"><?= $lang['traslados_filtro_completados'] ?></option>
+              <option value="cancelado"><?= $lang['traslados_filtro_cancelados'] ?></option>
             </select>
           </div>
           <div class="col-md-5">
             <div class="input-group">
               <span class="input-group-text border-primary bg-transparent text-primary"><i class="bi bi-search"></i></span>
-              <input type="text" id="filtro-texto" class="form-control border-primary" placeholder="Buscar paciente, ID, destino, vehículo...">
+              <input type="text" id="filtro-texto" class="form-control border-primary" placeholder="<?= $lang['traslados_placeholder_buscar'] ?>">
             </div>
           </div>
         </div>
       </div>
 
       <!-- SECCIÓN 1: TRASLADOS CONFIRMADOS -->
-      <h5 class="mb-3 fw-bold">Traslados Confirmados</h5>
+      <h5 class="mb-3 fw-bold"><?= $lang['traslados_titulo_confirmados'] ?></h5>
 
       <div id="alert-traslados-container"></div>
 
@@ -294,21 +310,21 @@ try {
           <table class="table table-custom mb-0">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Fecha/Hora</th>
-                <th>Vehículo</th>
-                <th>Conductor</th>
-                <th>Enfermero</th>
-                <th>Paciente/Carga</th>
-                <th>Destino</th>
-                <th>Estado</th>
-                <th class="text-center">Acciones</th>
+                <th><?= $lang['traslados_th_id'] ?></th>
+                <th><?= $lang['traslados_th_fecha'] ?></th>
+                <th><?= $lang['traslados_th_vehiculo'] ?></th>
+                <th><?= $lang['traslados_th_conductor'] ?></th>
+                <th><?= $lang['traslados_th_enfermero'] ?></th>
+                <th><?= $lang['traslados_th_paciente'] ?></th>
+                <th><?= $lang['traslados_th_destino'] ?></th>
+                <th><?= $lang['traslados_th_estado'] ?></th>
+                <th class="text-center"><?= $lang['traslados_th_acciones'] ?></th>
               </tr>
             </thead>
             <tbody id="tabla-traslados-body">
               <tr>
-                <td colspan="8" class="text-center text-muted py-4">
-                  <div class="spinner-border spinner-border-sm me-2"></div> Cargando traslados...
+                <td colspan="9" class="text-center text-muted py-4">
+                  <div class="spinner-border spinner-border-sm me-2"></div> <?= $lang['traslados_cargando_tabla'] ?>
                 </td>
               </tr>
             </tbody>
@@ -317,7 +333,7 @@ try {
       </div>
 
       <!-- SECCIÓN 2: SOLICITUDES PENDIENTES -->
-      <h5 class="mb-3 fw-bold">Solicitudes Pendientes de Aprobación</h5>
+      <h5 class="mb-3 fw-bold"><?= $lang['traslados_titulo_pendientes'] ?></h5>
 
       <div id="alert-solicitudes-container"></div>
 
@@ -326,19 +342,19 @@ try {
           <table class="table table-custom mb-0">
             <thead class="table-light">
               <tr>
-                <th>ID Sol.</th>
-                <th>Fecha Creada</th>
-                <th>Categoría</th>
-                <th>Paciente / Carga</th>
-                <th>Destino</th>
-                <th>Motivo</th>
-                <th class="text-center">Acciones</th>
+                <th><?= $lang['solicitudes_th_id'] ?></th>
+                <th><?= $lang['solicitudes_th_fecha'] ?></th>
+                <th><?= $lang['solicitudes_th_categoria'] ?></th>
+                <th><?= $lang['traslados_th_paciente'] ?></th>
+                <th><?= $lang['traslados_th_destino'] ?></th>
+                <th><?= $lang['solicitudes_th_motivo'] ?></th>
+                <th class="text-center"><?= $lang['traslados_th_acciones'] ?></th>
               </tr>
             </thead>
             <tbody id="tabla-solicitudes-body">
               <tr>
                 <td colspan="7" class="text-center text-muted py-4">
-                  <div class="spinner-border spinner-border-sm me-2"></div> Cargando solicitudes...
+                  <div class="spinner-border spinner-border-sm me-2"></div> <?= $lang['solicitudes_cargando'] ?>
                 </td>
               </tr>
             </tbody>
@@ -349,108 +365,108 @@ try {
 
     <!-- NUEVO TRASLADO -->
     <section class="view" id="view-nuevo-traslado">
-      <div class="page-title">Nueva Solicitud de Traslado</div>
+      <div class="page-title"><?= $lang['nuevo_traslado_titulo'] ?></div>
 
       <div class="section-card">
         <!-- Wizard Header -->
         <div class="wizard-steps mb-4">
           <div class="wizard-step active">
             <div class="step-num">1</div>
-            <span>Tipo</span>
+            <span><?= $lang['wizard_step_1'] ?></span>
           </div>
           <div class="step-line"></div>
           <div class="wizard-step">
             <div class="step-num">2</div>
-            <span>Datos</span>
+            <span><?= $lang['wizard_step_2'] ?></span>
           </div>
           <div class="step-line"></div>
           <div class="wizard-step">
             <div class="step-num">3</div>
-            <span>Ruta</span>
+            <span><?= $lang['wizard_step_3'] ?></span>
           </div>
         </div>
 
         <form id="formNuevoTraslado" novalidate>
           <!-- PASO 1: TIPO DE TRASLADO -->
           <div class="wizard-panel" data-step="1">
-            <p class="wizard-subtitle">Seleccione el tipo de traslado</p>
+            <p class="wizard-subtitle"><?= $lang['wizard_subtitle_1'] ?></p>
             <div class="col-md-12 mb-3">
-              <label class="form-label form-label-custom">Categoría <span class="text-danger">*</span></label>
+              <label class="form-label form-label-custom"><?= $lang['lbl_categoria'] ?> <span class="text-danger">*</span></label>
               <select class="form-select" name="categoria_traslado" id="categoria_traslado" required>
-                <option value="" selected disabled>Seleccione...</option>
-                <option value="PACIENTE">Paciente (Humano)</option>
-                <option value="MATERIAL_BIOLOGICO">Material Biológico / Órganos</option>
-                <option value="EQUIPAMIENTO">Equipamiento Médico</option>
-                <option value="INSUMOS">Insumos / Farmacia</option>
+                <option value="" selected disabled><?= $lang['select_default'] ?></option>
+                <option value="PACIENTE"><?= $lang['cat_paciente'] ?></option>
+                <option value="MATERIAL_BIOLOGICO"><?= $lang['cat_material'] ?></option>
+                <option value="EQUIPAMIENTO"><?= $lang['cat_equipamiento'] ?></option>
+                <option value="INSUMOS"><?= $lang['cat_insumos'] ?></option>
               </select>
             </div>
             <div class="info-box mt-3">
               <i class="bi bi-info-circle-fill"></i>
-              La solicitud se guardará como PENDIENTE para su posterior despacho.
+              <?= $lang['info_pendiente'] ?>
             </div>
           </div>
 
           <!-- PASO 2: DATOS DEL TRASLADO -->
           <div class="wizard-panel d-none" data-step="2">
-            <p class="wizard-subtitle">Información Específica</p>
+            <p class="wizard-subtitle"><?= $lang['wizard_subtitle_2'] ?></p>
             <div id="seccion_paciente" class="d-none">
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="form-label form-label-custom">Cédula de Identidad <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" name="ci_paciente" id="ci_paciente" placeholder="Ej: 12345678">
-                  <div class="invalid-feedback" id="feedback-ci">Por favor, ingrese una cédula válida (sin puntos ni guiones).</div>
+                  <label class="form-label form-label-custom"><?= $lang['lbl_ci'] ?> <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="ci_paciente" id="ci_paciente" placeholder="<?= $lang['placeholder_ci'] ?>">
+                  <div class="invalid-feedback" id="feedback-ci"><?= $lang['msg_error_cedula'] ?></div>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label form-label-custom">Modo de Movilidad <span class="text-danger">*</span></label>
+                  <label class="form-label form-label-custom"><?= $lang['lbl_movilidad'] ?> <span class="text-danger">*</span></label>
                   <select class="form-select" name="tipo_movilidad" id="tipo_movilidad">
-                    <option value="AMBULATORIO">Ambulatorio (Camina)</option>
-                    <option value="SILLA_RUEDAS">Silla de Ruedas</option>
-                    <option value="CAMILLA">Camilla</option>
+                    <option value="AMBULATORIO"><?= $lang['mov_ambulatorio'] ?></option>
+                    <option value="SILLA_RUEDAS"><?= $lang['mov_silla'] ?></option>
+                    <option value="CAMILLA"><?= $lang['mov_camilla'] ?></option>
                   </select>
                 </div>
                 <div class="col-12 mt-2">
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="requiere_soporte_uti" id="requiere_soporte_uti" value="1">
-                    <label class="form-check-label text-danger fw-bold" for="requiere_soporte_uti">Requiere Soporte Vital / UTI</label>
+                    <label class="form-check-label text-danger fw-bold" for="requiere_soporte_uti"><?= $lang['lbl_soporte_uti'] ?></label>
                   </div>
                 </div>
               </div>
             </div>
             <div id="seccion_logistica" class="d-none">
               <div class="col-12">
-                <label class="form-label form-label-custom">Detalle exacto de la carga <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="detalle_carga" id="detalle_carga" placeholder="Ej: 10 Tubos de sangre">
+                <label class="form-label form-label-custom"><?= $lang['lbl_detalle_carga'] ?> <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="detalle_carga" id="detalle_carga" placeholder="<?= $lang['placeholder_carga'] ?>">
               </div>
             </div>
             <div class="col-12 mt-3">
-              <label class="form-label form-label-custom">Motivo del Traslado <span class="text-danger">*</span></label>
-              <textarea class="form-control" name="motivo" rows="2" placeholder="Detalles adicionales..." required></textarea>
+              <label class="form-label form-label-custom"><?= $lang['lbl_motivo'] ?> <span class="text-danger">*</span></label>
+              <textarea class="form-control" name="motivo" rows="2" placeholder="<?= $lang['placeholder_motivo'] ?>" required></textarea>
             </div>
           </div>
 
           <!-- PASO 3: RUTA Y HORARIOS -->
           <div class="wizard-panel d-none" data-step="3">
-            <p class="wizard-subtitle">Establecer Origen, Destino y Hora</p>
+            <p class="wizard-subtitle"><?= $lang['wizard_subtitle_3'] ?></p>
             <div class="row g-3">
 
               <div class="col-md-6">
-                <label class="form-label form-label-custom">Origen</label>
-                <input type="text" class="form-control text-muted bg-light" value="Hospital de Clínicas" readonly />
+                <label class="form-label form-label-custom"><?= $lang['lbl_origen'] ?></label>
+                <input type="text" class="form-control text-muted bg-light" value="<?= $lang['hospital_nombre'] ?>" readonly />
                 <input type="hidden" name="origen" value="1" />
               </div>
 
               <div class="col-md-6">
-                <label class="form-label form-label-custom">Destino <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="destino" placeholder="Ej: Sanatorio Americano, Domicilio..." required />
+                <label class="form-label form-label-custom"><?= $lang['lbl_destino'] ?> <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="destino" placeholder="<?= $lang['placeholder_destino'] ?>" required />
               </div>
 
               <div class="col-md-6">
-                <label class="form-label form-label-custom">Fecha <span class="text-danger">*</span></label>
+                <label class="form-label form-label-custom"><?= $lang['lbl_fecha'] ?> <span class="text-danger">*</span></label>
                 <input type="date" class="form-control" name="fecha" required />
               </div>
 
               <div class="col-md-6">
-                <label class="form-label form-label-custom">Hora estimada <span class="text-danger">*</span></label>
+                <label class="form-label form-label-custom"><?= $lang['lbl_hora'] ?> <span class="text-danger">*</span></label>
                 <input type="time" class="form-control" name="hora" required />
               </div>
 
@@ -459,20 +475,20 @@ try {
 
           <div id="form-alert-container"></div>
           <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-            <button type="button" class="btn btn-outline-secondary btn-wizard-prev" id="btnPrevStep" disabled><i class="bi bi-chevron-left"></i> ANTERIOR</button>
-            <button type="button" class="btn btn-primary btn-wizard-next" id="btnNextStep">SIGUIENTE <i class="bi bi-chevron-right"></i></button>
-            <button type="submit" class="btn btn-success d-none" id="btnSubmitForm"><i class="bi bi-floppy"></i> REGISTRAR SOLICITUD</button>
+            <button type="button" class="btn btn-outline-secondary btn-wizard-prev" id="btnPrevStep" disabled><i class="bi bi-chevron-left"></i> <?= $lang['btn_anterior'] ?></button>
+            <button type="button" class="btn btn-primary btn-wizard-next" id="btnNextStep"><?= $lang['btn_siguiente'] ?> <i class="bi bi-chevron-right"></i></button>
+            <button type="submit" class="btn btn-success d-none" id="btnSubmitForm"><i class="bi bi-floppy"></i> <?= $lang['btn_registrar_solicitud'] ?></button>
           </div>
         </form>
       </div>
     </section>
 
-    <!-- MODAL ASIGNAR RECURSOS (Agregar antes de cerrar el body) -->
+    <!-- MODAL ASIGNAR RECURSOS -->
     <div class="modal fade" id="modalAsignarRecursos" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title fw-bold text-primary"><i class="bi bi-truck me-2"></i>Despacho: Asignar Recursos</h5>
+            <h5 class="modal-title fw-bold text-primary"><i class="bi bi-truck me-2"></i><?= $lang['modal_asignar_titulo'] ?></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <form id="formAsignarRecursos">
@@ -481,30 +497,30 @@ try {
               <div id="modal-alert-container"></div>
               <div class="row g-3">
                 <div class="col-md-12">
-                  <label class="form-label fw-bold">Vehículo <span class="text-danger">*</span></label>
+                  <label class="form-label fw-bold"><?= $lang['lbl_vehiculo'] ?> <span class="text-danger">*</span></label>
                   <select class="form-select" name="vehiculo" id="modal_vehiculo_select" required>
-                    <option value="" selected disabled>Seleccionar vehículo idóneo...</option>
+                    <option value="" selected disabled><?= $lang['select_vehiculo_def'] ?></option>
                     <?php foreach ($vehiculosDisponibles as $v): ?>
                       <option value="<?= $v['id_vehiculo'] ?>" data-sr="<?= $v['apto_silla_ruedas'] ?>" data-cam="<?= $v['apto_camilla'] ?>" data-uti="<?= $v['apto_uti'] ?>" data-bio="<?= $v['apto_biologico'] ?>" data-ins="<?= $v['apto_insumos'] ?>">
                         <?= htmlspecialchars($v['tipo'] . ' - ' . $v['marca'] . ' ' . $v['modelo'] . ' (' . $v['matricula'] . ')') ?>
                       </option>
                     <?php endforeach; ?>
                   </select>
-                  <div id="modal_vehiculo_warning" class="text-danger mt-1 d-none" style="font-size: 0.85rem;">No hay vehículos que cumplan los requisitos.</div>
+                  <div id="modal_vehiculo_warning" class="text-danger mt-1 d-none" style="font-size: 0.85rem;"><?= $lang['warn_no_vehiculos'] ?></div>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Conductor <span class="text-danger">*</span></label>
+                  <label class="form-label fw-bold"><?= $lang['lbl_conductor'] ?> <span class="text-danger">*</span></label>
                   <select class="form-select" name="conductor" required>
-                    <option value="" selected disabled>Seleccionar...</option>
+                    <option value="" selected disabled><?= $lang['select_default'] ?></option>
                     <?php foreach ($conductoresDisponibles as $c): ?>
                       <option value="<?= $c['id_personal'] ?>"><?= htmlspecialchars($c['nombre'] . ' ' . $c['apellido']) ?></option>
                     <?php endforeach; ?>
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Enfermero</label>
+                  <label class="form-label fw-bold"><?= $lang['lbl_enfermero'] ?></label>
                   <select class="form-select" name="enfermero">
-                    <option value="" selected>Ninguno / No requiere</option>
+                    <option value="" selected><?= $lang['select_ninguno'] ?></option>
                     <?php foreach ($enfermerosDisponibles as $e): ?>
                       <option value="<?= $e['id_personal'] ?>"><?= htmlspecialchars($e['nombre'] . ' ' . $e['apellido']) ?></option>
                     <?php endforeach; ?>
@@ -513,8 +529,8 @@ try {
               </div>
             </div>
             <div class="modal-footer border-top-0 pt-0">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-success" id="btnConfirmarAsignacion"><i class="bi bi-check2-circle"></i> Confirmar Despacho</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?= $lang['btn_cancelar'] ?></button>
+              <button type="submit" class="btn btn-success" id="btnConfirmarAsignacion"><i class="bi bi-check2-circle"></i> <?= $lang['btn_confirmar_despacho'] ?></button>
             </div>
           </form>
         </div>
@@ -523,63 +539,60 @@ try {
 
     <!-- SEGUIMIENTO -->
     <section class="view" id="view-seguimiento">
-      <div class="page-title mb-4">Seguimiento de Traslado</div>
+      <div class="page-title mb-4"><?= $lang['seguimiento_titulo'] ?></div>
 
-      <!-- NUEVO: CONTENEDOR DE ALERTAS DE SEGUIMIENTO -->
       <div id="alert-seguimiento-container"></div>
 
       <div class="section-card mb-4 py-3 px-4">
         <div class="section-card mb-4 py-3 px-4">
           <div class="row align-items-center g-3">
             <div class="col-md-6 col-lg-5">
-              <label class="form-label fw-bold text-primary mb-1"><i class="bi bi-search me-1"></i> Buscar Traslado Manualmente</label>
+              <label class="form-label fw-bold text-primary mb-1"><i class="bi bi-search me-1"></i> <?= $lang['lbl_buscar_manual'] ?></label>
               <div class="input-group">
                 <span class="input-group-text border-primary bg-transparent text-primary fw-bold">AMB-</span>
-                <input type="number" id="input-buscar-seguimiento" class="form-control border-primary" placeholder="Ej: 3" min="1" oninput="this.value = Math.abs(this.value)">
-                <button class="btn btn-primary" type="button" id="btn-buscar-seguimiento">Rastrear</button>
+                <input type="number" id="input-buscar-seguimiento" class="form-control border-primary" placeholder="<?= $lang['placeholder_buscar_id'] ?>" min="1" oninput="this.value = Math.abs(this.value)">
+                <button class="btn btn-primary" type="button" id="btn-buscar-seguimiento"><?= $lang['btn_rastrear'] ?></button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Estado vacío por defecto -->
         <div id="seg-empty-state" class="text-center py-5 mt-5">
           <i class="bi bi-geo-alt display-1 text-muted mb-3 opacity-50"></i>
-          <h4 class="text-muted">Seleccione un traslado</h4>
-          <p class="text-muted">Haga clic en el botón "Ver Seguimiento" en la tabla de traslados activos.</p>
+          <h4 class="text-muted"><?= $lang['seg_empty_titulo'] ?></h4>
+          <p class="text-muted"><?= $lang['seg_empty_desc'] ?></p>
         </div>
 
-        <!-- Contenedor dinámico (oculto inicialmente) -->
         <div id="seg-content-container" class="row g-4 d-none">
           <div class="col-12 col-xl-8">
             <div class="section-card">
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="mb-0 seguimiento-title" id="seg-titulo">AMB-###</h5>
-                <span id="seg-badge" class="badge-estado b-transito">Estado</span>
+                <span id="seg-badge" class="badge-estado b-transito"><?= $lang['traslados_th_estado'] ?></span>
               </div>
 
               <div class="row g-3 mb-4">
                 <div class="col-6">
-                  <div class="info-label">Paciente / Carga</div>
+                  <div class="info-label"><?= $lang['lbl_seg_paciente'] ?></div>
                   <div class="info-value-bold" id="seg-paciente">-</div>
                 </div>
                 <div class="col-6">
-                  <div class="info-label">Vehículo</div>
+                  <div class="info-label"><?= $lang['lbl_vehiculo'] ?></div>
                   <div class="info-value-bold" id="seg-vehiculo">-</div>
                 </div>
                 <div class="col-6">
-                  <div class="info-label">Conductor</div>
+                  <div class="info-label"><?= $lang['lbl_conductor'] ?></div>
                   <div class="info-value" id="seg-conductor">-</div>
                 </div>
                 <div class="col-6">
-                  <div class="info-label">Enfermero Responsable</div>
+                  <div class="info-label"><?= $lang['lbl_seg_enfermero'] ?></div>
                   <div class="info-value" id="seg-enfermero">-</div>
                 </div>
               </div>
 
               <div class="d-flex justify-content-between mb-1 ruta-label">
-                <span id="seg-origen">Origen</span>
-                <strong id="seg-destino">Destino</strong>
+                <span id="seg-origen"><?= $lang['lbl_origen'] ?></span>
+                <strong id="seg-destino"><?= $lang['lbl_destino'] ?></strong>
               </div>
               <div class="progress mb-1 progress-md">
                 <div id="seg-progress-bar" class="progress-bar progress-bar-primary" style="width: 0%"></div>
@@ -587,12 +600,10 @@ try {
             </div>
           </div>
 
-          <!-- Línea de Tiempo Dinámica -->
           <div class="col-12 col-xl-4">
             <div class="section-card">
-              <h5>Línea de Tiempo</h5>
-              <div id="seg-timeline-container">
-              </div>
+              <h5><?= $lang['lbl_linea_tiempo'] ?></h5>
+              <div id="seg-timeline-container"></div>
             </div>
           </div>
         </div>
@@ -600,16 +611,15 @@ try {
 
     <!-- RECURSOS -->
     <section class="view" id="view-recursos">
-      <div class="page-title">Gestión de Recursos</div>
+      <div class="page-title"><?= $lang['recursos_titulo'] ?></div>
 
-      <!-- Stat cards (Dinámicas) -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-sm-4">
           <div class="stat-card">
             <div>
               <div class="stat-value"><?= $vehiculosDispCount ?>/<?= $vehiculosTotales ?></div>
-              <div class="stat-label">Vehículos Totales</div>
-              <div class="stat-sub">Disponibles</div>
+              <div class="stat-label"><?= $lang['stat_vehiculos'] ?></div>
+              <div class="stat-sub"><?= $lang['stat_disponibles'] ?></div>
             </div>
             <div class="stat-icon-circle"><i class="bi bi-truck-front-fill"></i></div>
           </div>
@@ -618,8 +628,8 @@ try {
           <div class="stat-card">
             <div>
               <div class="stat-value"><?= $conductoresDispCount ?>/<?= $conductoresTotales ?></div>
-              <div class="stat-label">Conductores</div>
-              <div class="stat-sub">Disponibles</div>
+              <div class="stat-label"><?= $lang['stat_conductores'] ?></div>
+              <div class="stat-sub"><?= $lang['stat_disponibles'] ?></div>
             </div>
             <div class="stat-icon-circle"><i class="bi bi-person-fill"></i></div>
           </div>
@@ -628,50 +638,51 @@ try {
           <div class="stat-card">
             <div>
               <div class="stat-value"><?= $enfermerosDispCount ?>/<?= $enfermerosTotales ?></div>
-              <div class="stat-label">Enfermeros</div>
-              <div class="stat-sub">Disponibles</div>
+              <div class="stat-label"><?= $lang['stat_enfermeros'] ?></div>
+              <div class="stat-sub"><?= $lang['stat_disponibles'] ?></div>
             </div>
             <div class="stat-icon-circle"><i class="bi bi-plus-circle-fill"></i></div>
           </div>
         </div>
       </div>
 
-      <!-- Tabs -->
       <div class="section-card p-0 overflow-hidden">
         <div class="px-3 pt-3">
           <div class="tab-pill-bar">
-            <div class="tab-pill active" data-tab="tab-vehiculos">VEHÍCULOS</div>
-            <div class="tab-pill" data-tab="tab-conductores">CONDUCTORES</div>
-            <div class="tab-pill" data-tab="tab-enfermeros">ENFERMEROS</div>
+            <div class="tab-pill active" data-tab="tab-vehiculos"><?= $lang['tab_vehiculos'] ?></div>
+            <div class="tab-pill" data-tab="tab-conductores"><?= $lang['tab_conductores'] ?></div>
+            <div class="tab-pill" data-tab="tab-enfermeros"><?= $lang['tab_enfermeros'] ?></div>
           </div>
         </div>
 
-        <!-- Vehículos tab -->
         <div id="tab-vehiculos" class="tab-content-panel active">
           <div class="table-responsive">
             <table class="table table-custom mb-0">
               <thead>
                 <tr>
-                  <th>ID Vehículo</th>
-                  <th>Tipo</th>
-                  <th>Patente</th>
-                  <th>Estado</th>
-                  <th>Conductor Asignado</th>
+                  <th><?= $lang['th_id_vehiculo'] ?></th>
+                  <th><?= $lang['th_tipo'] ?></th>
+                  <th><?= $lang['th_patente'] ?></th>
+                  <th><?= $lang['th_estado'] ?></th>
+                  <th><?= $lang['th_conductor_asignado'] ?></th>
                 </tr>
               </thead>
               <tbody>
                 <?php foreach ($todosVehiculos as $v): ?>
                   <?php
                   $estado = $v['estado_disponibilidad'];
+                  $estado_clave = "estado_" . strtolower($estado);
+                  $estado_traducido = isset($lang[$estado_clave]) ? $lang[$estado_clave] : str_replace('_', ' ', $estado);
+
                   $badgeClass = $estado === 'DISPONIBLE' ? 'b-disponible' : ($estado === 'EN_USO' ? 'b-servicio' : 'b-mant');
-                  $estadoTxt = $estado === 'DISPONIBLE' ? '<i class="bi bi-check-circle-fill"></i> Disponible' : str_replace('_', ' ', $estado);
+                  $estadoTxt = $estado === 'DISPONIBLE' ? '<i class="bi bi-check-circle-fill"></i> ' . $estado_traducido : ucfirst(strtolower($estado_traducido));
                   $tipoClass = stripos($v['tipo'], 'Ambulancia') !== false ? 'bt-ambulancia' : 'bt-auto';
                   ?>
                   <tr>
                     <td>VEH-<?= $v['id_vehiculo'] ?></td>
                     <td><span class="badge-tipo <?= $tipoClass ?>"><?= htmlspecialchars($v['tipo']) ?></span></td>
                     <td><?= htmlspecialchars($v['matricula']) ?></td>
-                    <td><span class="badge-estado <?= $badgeClass ?>"><?= ucfirst(strtolower($estadoTxt)) ?></span></td>
+                    <td><span class="badge-estado <?= $badgeClass ?>"><?= $estadoTxt ?></span></td>
                     <td><?= $v['conductor_asignado'] ? htmlspecialchars($v['conductor_asignado']) : '–' ?></td>
                   </tr>
                 <?php endforeach; ?>
@@ -680,16 +691,15 @@ try {
           </div>
         </div>
 
-        <!-- Conductores tab -->
         <div id="tab-conductores" class="tab-content-panel">
           <div class="table-responsive">
             <table class="table table-custom mb-0">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>CI</th>
-                  <th>Estado</th>
-                  <th>Vehículo Asignado</th>
+                  <th><?= $lang['th_nombre'] ?></th>
+                  <th><?= $lang['th_ci'] ?></th>
+                  <th><?= $lang['th_estado'] ?></th>
+                  <th><?= $lang['lbl_vehiculo'] ?></th>
                 </tr>
               </thead>
               <tbody>
@@ -697,7 +707,7 @@ try {
                   <?php
                   $enUso = !empty($c['vehiculo_asignado']);
                   $badgeClass = $enUso ? 'b-servicio' : ($c['activo'] ? 'b-disponible' : 'b-mant');
-                  $estadoTxt = $enUso ? 'En servicio' : ($c['activo'] ? '<i class="bi bi-check-circle-fill"></i> Disponible' : 'Inactivo');
+                  $estadoTxt = $enUso ? $lang['estado_en_uso'] : ($c['activo'] ? '<i class="bi bi-check-circle-fill"></i> ' . $lang['estado_disponible'] : $lang['estado_inactivo']);
                   ?>
                   <tr>
                     <td><?= htmlspecialchars($c['nombre'] . ' ' . $c['apellido']) ?></td>
@@ -711,16 +721,15 @@ try {
           </div>
         </div>
 
-        <!-- Enfermeros tab -->
         <div id="tab-enfermeros" class="tab-content-panel">
           <div class="table-responsive">
             <table class="table table-custom mb-0">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>CI</th>
-                  <th>Estado</th>
-                  <th>Traslado Asignado</th>
+                  <th><?= $lang['th_nombre'] ?></th>
+                  <th><?= $lang['th_ci'] ?></th>
+                  <th><?= $lang['th_estado'] ?></th>
+                  <th><?= $lang['th_traslado_asignado'] ?></th>
                 </tr>
               </thead>
               <tbody>
@@ -728,7 +737,7 @@ try {
                   <?php
                   $enUso = !empty($e['traslado_asignado']);
                   $badgeClass = $enUso ? 'b-servicio' : ($e['activo'] ? 'b-disponible' : 'b-mant');
-                  $estadoTxt = $enUso ? 'En servicio' : ($e['activo'] ? '<i class="bi bi-check-circle-fill"></i> Disponible' : 'Inactivo');
+                  $estadoTxt = $enUso ? $lang['estado_en_uso'] : ($e['activo'] ? '<i class="bi bi-check-circle-fill"></i> ' . $lang['estado_disponible'] : $lang['estado_inactivo']);
                   ?>
                   <tr>
                     <td><?= htmlspecialchars($e['nombre'] . ' ' . $e['apellido']) ?></td>
@@ -746,15 +755,30 @@ try {
 
     <!-- CONFIGURACIÓN -->
     <section class="view" id="view-configuracion">
-      <div class="page-title">Configuración</div>
-      <div class="row g-4">
+      <div class="page-title"><?= $lang['config_titulo'] ?></div>
+      <div class="row g-4 align-items-stretch">
+        <!-- Tarjeta Modo Oscuro -->
         <div class="col-lg-6">
-          <div class="section-card">
-            <h5><i class="bi bi-palette"></i> Apariencia</h5>
-            <div class="form-check form-switch mb-0">
+          <div class="section-card h-100">
+            <h5><i class="bi bi-palette"></i> <?= $lang['config_panel_apariencia'] ?></h5>
+            <div class="form-check form-switch mb-0 mt-3">
               <input class="form-check-input check-cursor-pointer" type="checkbox" id="cfg-darkmode" />
-              <label class="form-check-label fw-bold form-check-label-title" for="cfg-darkmode">Modo Oscuro (Estilo EVE)</label>
-              <p class="text-muted mt-1 form-check-description">Cambia la interfaz a la paleta de colores oscuros con acentos neón ideal para guardias nocturnas.</p>
+              <label class="form-check-label fw-bold form-check-label-title" for="cfg-darkmode"><?= $lang['config_label_darkmode'] ?></label>
+              <p class="text-muted mt-1 form-check-description"><?= $lang['config_desc_darkmode'] ?></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Idioma (Nueva, a la derecha) -->
+        <div class="col-lg-6">
+          <div class="section-card h-100">
+            <h5><i class="bi bi-globe"></i> <?= $lang['config_idioma'] ?? 'Idioma / Language' ?></h5>
+            <div class="mt-3">
+              <div class="btn-group" role="group">
+                <a href="?lang=es" class="btn <?= $idiomaActual == 'es' ? 'btn-primary' : 'btn-outline-primary' ?>">Español</a>
+                <a href="?lang=en" class="btn <?= $idiomaActual == 'en' ? 'btn-primary' : 'btn-outline-primary' ?>">English</a>
+              </div>
+              <p class="text-muted mt-2 form-check-description"><?= $lang['config_desc_idioma'] ?? 'Seleccione el idioma de la interfaz del sistema.' ?></p>
             </div>
           </div>
         </div>
@@ -766,15 +790,15 @@ try {
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Rechazo</h5>
+            <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i> <?= $lang['modal_rechazar_titulo'] ?></h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            ¿Está seguro que desea rechazar la solicitud <strong id="rechazo-id-text"></strong>? Esta acción cancelará el viaje y no se puede deshacer.
+            <?= $lang['modal_rechazar_desc'] ?> <strong id="rechazo-id-text"></strong>? <?= $lang['modal_rechazar_nota'] ?>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-danger" id="btnConfirmarRechazo">Sí, rechazar solicitud</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?= $lang['btn_cancelar'] ?></button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarRechazo"><?= $lang['btn_confirmar_rechazo'] ?></button>
           </div>
         </div>
       </div>
@@ -785,7 +809,7 @@ try {
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Modificar Traslado AMB-<span id="mod_title_id"></span></h5>
+            <h5 class="modal-title fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i><?= $lang['modal_modificar_titulo'] ?> AMB-<span id="mod_title_id"></span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <form id="formModificarTraslado">
@@ -793,7 +817,7 @@ try {
               <input type="hidden" name="id_traslado" id="mod_id_traslado" />
               <div class="row g-3">
                 <div class="col-md-12">
-                  <label class="form-label fw-bold">Vehículo <span class="text-danger">*</span></label>
+                  <label class="form-label fw-bold"><?= $lang['lbl_vehiculo'] ?> <span class="text-danger">*</span></label>
                   <select class="form-select" name="vehiculo" id="mod_vehiculo" required>
                     <?php foreach ($todosVehiculos as $v): ?>
                       <option value="<?= $v['id_vehiculo'] ?>"><?= htmlspecialchars($v['tipo'] . ' - ' . $v['matricula']) ?></option>
@@ -801,7 +825,7 @@ try {
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Conductor <span class="text-danger">*</span></label>
+                  <label class="form-label fw-bold"><?= $lang['lbl_conductor'] ?> <span class="text-danger">*</span></label>
                   <select class="form-select" name="conductor" id="mod_conductor" required>
                     <?php foreach ($todosConductores as $c): ?>
                       <option value="<?= $c['id_personal'] ?>"><?= htmlspecialchars($c['nombre'] . ' ' . $c['apellido']) ?></option>
@@ -809,9 +833,9 @@ try {
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Enfermero</label>
+                  <label class="form-label fw-bold"><?= $lang['lbl_enfermero'] ?></label>
                   <select class="form-select" name="enfermero" id="mod_enfermero">
-                    <option value="">Ninguno / No requiere</option>
+                    <option value=""><?= $lang['select_ninguno'] ?></option>
                     <?php foreach ($todosEnfermeros as $e): ?>
                       <option value="<?= $e['id_personal'] ?>"><?= htmlspecialchars($e['nombre'] . ' ' . $e['apellido']) ?></option>
                     <?php endforeach; ?>
@@ -820,8 +844,8 @@ try {
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-primary" id="btnGuardarModificacion"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?= $lang['btn_cancelar'] ?></button>
+              <button type="submit" class="btn btn-primary" id="btnGuardarModificacion"><i class="bi bi-floppy"></i> <?= $lang['btn_guardar_cambios'] ?></button>
             </div>
           </form>
         </div>
@@ -833,16 +857,16 @@ try {
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title"><i class="bi bi-x-octagon-fill me-2"></i> Confirmar Cancelación</h5>
+            <h5 class="modal-title"><i class="bi bi-x-octagon-fill me-2"></i> <?= $lang['modal_cancelar_titulo'] ?></h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            ¿Está seguro que desea cancelar el traslado <strong>AMB-<span id="cancel-id-text"></span></strong>?<br><br>
-            <small class="text-muted">El viaje pasará a estado "Cancelado" y los recursos asignados quedarán liberados.</small>
+            <?= $lang['modal_cancelar_desc'] ?> <strong>AMB-<span id="cancel-id-text"></span></strong>?<br><br>
+            <small class="text-muted"><?= $lang['modal_cancelar_nota'] ?></small>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-            <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar traslado</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?= $lang['btn_cerrar'] ?></button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion"><?= $lang['btn_confirmar_cancelacion'] ?></button>
           </div>
         </div>
       </div>
@@ -853,29 +877,29 @@ try {
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title fw-bold text-success"><i class="bi bi-clock-history me-2"></i>Actualizar Estado AMB-<span id="lbl_estado_id"></span></h5>
+            <h5 class="modal-title fw-bold text-success"><i class="bi bi-clock-history me-2"></i><?= $lang['modal_estado_titulo'] ?> AMB-<span id="lbl_estado_id"></span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <form id="formActualizarEstado">
             <div class="modal-body">
               <input type="hidden" name="id_traslado" id="estado_id_traslado" />
               <div class="mb-3">
-                <label class="form-label fw-bold">Nuevo Estado <span class="text-danger">*</span></label>
+                <label class="form-label fw-bold"><?= $lang['lbl_nuevo_estado'] ?> <span class="text-danger">*</span></label>
                 <select class="form-select border-success" name="id_estado" required>
-                  <option value="" selected disabled>Seleccione fase del viaje...</option>
-                  <option value="2">En Camino / En Tránsito</option>
-                  <option value="3">Completado / Llegada a destino</option>
+                  <option value="" selected disabled><?= $lang['select_fase'] ?></option>
+                  <option value="2"><?= $lang['estado_en_camino'] ?></option>
+                  <option value="3"><?= $lang['estado_completado'] ?></option>
                 </select>
               </div>
               <div class="mb-0">
-                <label class="form-label fw-bold">Observaciones <span class="text-danger">*</span></label>
-                <textarea class="form-control" name="observaciones" rows="3" placeholder="Ej: Chofer retiró la nevera térmica con muestras..." required></textarea>
-                <small class="text-muted">Este texto aparecerá debajo del estado en la Línea de Tiempo.</small>
+                <label class="form-label fw-bold"><?= $lang['lbl_observaciones'] ?> <span class="text-danger">*</span></label>
+                <textarea class="form-control" name="observaciones" rows="3" placeholder="<?= $lang['placeholder_obs'] ?>" required></textarea>
+                <small class="text-muted"><?= $lang['nota_obs'] ?></small>
               </div>
             </div>
             <div class="modal-footer border-top-0">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-success" id="btnGuardarEstado"><i class="bi bi-send-check"></i> Registrar Avance</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?= $lang['btn_cancelar'] ?></button>
+              <button type="submit" class="btn btn-success" id="btnGuardarEstado"><i class="bi bi-send-check"></i> <?= $lang['btn_registrar_avance'] ?></button>
             </div>
           </form>
         </div>
@@ -885,7 +909,7 @@ try {
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- JavaScript propio -->
-    <script src="../vista/assets/js/panel-de-gestion.js?v=2"></script>
+    <script src="../vista/assets/js/panel-de-gestion.js?v=3"></script>
 </body>
 
 </html>

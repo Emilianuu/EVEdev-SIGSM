@@ -41,12 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const topbarTitle = document.getElementById("topbar-title");
 
   const sectionTitles = {
-    dashboard: "Panel Principal",
-    traslados: "Gestión de Traslados",
-    "nuevo-traslado": "Nuevo Traslado",
-    seguimiento: "Seguimiento de Traslados",
-    recursos: "Gestión de Recursos",
-    configuracion: "Configuración",
+    dashboard: LANG.traslados_menu_panel || "Panel Principal",
+    traslados: LANG.traslados_menu_traslados || "Gestión de Traslados",
+    "nuevo-traslado": LANG.traslados_menu_nuevo || "Nuevo Traslado",
+    seguimiento: LANG.traslados_menu_seguimiento || "Seguimiento de Traslados",
+    recursos: LANG.traslados_menu_recursos || "Gestión de Recursos",
+    configuracion: LANG.traslados_menu_config || "Configuración",
   };
 
   navLinks.forEach((link) => {
@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isValid = false;
             inputCi.classList.add("is-invalid");
             document.getElementById("feedback-ci").textContent =
-              "La cédula debe contener 7 u 8 números.";
+              LANG.msg_error_cedula || "La cédula debe contener 7 u 8 números.";
           } else {
             inputCi.value = ciLimpia;
           }
@@ -242,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (fechaInput && fechaInput.value) {
           const hoy = new Date();
-          // Obtener fecha local en formato YYYY-MM-DD
           const fechaHoyStr =
             hoy.getFullYear() +
             "-" +
@@ -258,7 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
             horaInput &&
             horaInput.value
           ) {
-            // Si el traslado es hoy, validamos que la hora no haya pasado
             const horaActualStr =
               String(hoy.getHours()).padStart(2, "0") +
               ":" +
@@ -272,7 +270,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!isValid)
-        mostrarAlerta("Revise los campos marcados en rojo.", "warning");
+        mostrarAlerta(
+          LANG.msg_error_campos || "Revise los campos marcados en rojo.",
+          "warning",
+        );
       else document.getElementById("form-alert-container").innerHTML = "";
 
       return isValid;
@@ -302,8 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("accion", "guardar");
 
         const textoOriginal = btnSubmit.innerHTML;
-        btnSubmit.innerHTML =
-          '<span class="spinner-border spinner-border-sm me-2"></span> GUARDANDO...';
+        btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> ${LANG.msg_guardando || "GUARDANDO..."}`;
         btnSubmit.disabled = true;
 
         fetch("../controlador/traslado_controlador.php", {
@@ -315,7 +315,11 @@ document.addEventListener("DOMContentLoaded", () => {
             btnSubmit.innerHTML = textoOriginal;
             btnSubmit.disabled = false;
             if (data.status === "success") {
-              mostrarAlerta("¡Solicitud registrada correctamente!", "success");
+              mostrarAlerta(
+                LANG.msg_solicitud_registrada ||
+                  "¡Solicitud registrada correctamente!",
+                "success",
+              );
               formWizard.reset();
               currentStep = 1;
               updateWizard();
@@ -328,7 +332,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           })
           .catch((err) => {
-            mostrarAlerta("Error de conexión.", "danger");
+            mostrarAlerta(
+              LANG.msg_error_conexion || "Error de conexión.",
+              "danger",
+            );
             btnSubmit.innerHTML = textoOriginal;
             btnSubmit.disabled = false;
           });
@@ -369,14 +376,16 @@ document.addEventListener("DOMContentLoaded", () => {
         esCompatible = false;
       }
 
+      const noCompatibleText = LANG.msg_no_compatible || "(No compatible)";
+
       if (esCompatible) {
         opt.disabled = false;
-        opt.text = opt.text.replace(" (No compatible)", "");
+        opt.text = opt.text.replace(` ${noCompatibleText}`, "");
         vehiculosValidos++;
       } else {
         opt.disabled = true;
-        if (!opt.text.includes("(No compatible)"))
-          opt.text += " (No compatible)";
+        if (!opt.text.includes(noCompatibleText))
+          opt.text += ` ${noCompatibleText}`;
       }
     });
 
@@ -401,8 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const btnConf = document.getElementById("btnConfirmarAsignacion");
       const textoOrig = btnConf.innerHTML;
-      btnConf.innerHTML =
-        '<span class="spinner-border spinner-border-sm"></span> Asignando...';
+      btnConf.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${LANG.msg_asignando || "Asignando..."}`;
       btnConf.disabled = true;
 
       fetch("../controlador/traslado_controlador.php", {
@@ -469,8 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const btn = this;
       const originalText = btn.innerHTML;
-      btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm me-2"></span>Rechazando...';
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${LANG.msg_rechazando || "Rechazando..."}`;
       btn.disabled = true;
 
       const formData = new FormData();
@@ -491,14 +498,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (data.status === "success") {
             mostrarAlertaSolicitudes(
-              "Solicitud SOL-" +
-                solicitudARechazar +
-                " rechazada correctamente.",
+              (
+                LANG.msg_solicitud_rechazada ||
+                "Solicitud SOL-{id} rechazada correctamente."
+              ).replace("{id}", solicitudARechazar),
               "success",
             );
             cargarSolicitudesPendientes();
           } else {
-            mostrarAlertaSolicitudes("Error: " + data.mensaje, "danger");
+            mostrarAlertaSolicitudes(
+              (LANG.msg_error || "Error: ") + data.mensaje,
+              "danger",
+            );
           }
           solicitudARechazar = null;
         })
@@ -510,7 +521,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modalConfirmarRechazo"),
           ).hide();
           mostrarAlertaSolicitudes(
-            "Error de conexión al rechazar la solicitud.",
+            LANG.msg_error_conexion_rechazar ||
+              "Error de conexión al rechazar la solicitud.",
             "danger",
           );
           solicitudARechazar = null;
@@ -535,9 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
   }
 
-  /* --- MODIFICAR TRASLADO --- */
   window.modificarTraslado = function (id) {
-    // 1. Obtener datos actuales
     fetch(
       `../controlador/traslado_controlador.php?accion=obtener_traslado&id_traslado=${id}`,
     )
@@ -547,7 +557,6 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("mod_title_id").textContent = id;
           document.getElementById("mod_id_traslado").value = id;
 
-          // Solo cargamos los recursos (vehículo y personal)
           document.getElementById("mod_vehiculo").value =
             data.id_vehiculo || "";
           document.getElementById("mod_conductor").value =
@@ -561,7 +570,12 @@ document.addEventListener("DOMContentLoaded", () => {
           modalMod.show();
         }
       })
-      .catch((err) => alert("Error al cargar los datos del traslado."));
+      .catch((err) =>
+        alert(
+          LANG.msg_error_cargar_datos ||
+            "Error al cargar los datos del traslado.",
+        ),
+      );
   };
 
   const formModificar = document.getElementById("formModificarTraslado");
@@ -571,8 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const btn = document.getElementById("btnGuardarModificacion");
       const textoOrig = btn.innerHTML;
-      btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${LANG.msg_guardando_cambios || "Guardando..."}`;
       btn.disabled = true;
 
       const formData = new FormData(this);
@@ -592,14 +605,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (data.status === "success") {
             mostrarAlertaTrasladosTop(
-              "Traslado AMB-" +
-                formData.get("id_traslado") +
-                " modificado correctamente.",
+              (
+                LANG.msg_traslado_modificado ||
+                "Traslado AMB-{id} modificado correctamente."
+              ).replace("{id}", formData.get("id_traslado")),
               "success",
             );
-            cargarTraslados(); // Recarga la tabla de arriba
+            cargarTraslados();
           } else {
-            mostrarAlertaTrasladosTop("Error: " + data.mensaje, "danger");
+            mostrarAlertaTrasladosTop(
+              (LANG.msg_error || "Error: ") + data.mensaje,
+              "danger",
+            );
           }
         })
         .catch((err) => {
@@ -609,7 +626,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modalModificarTraslado"),
           ).hide();
           mostrarAlertaTrasladosTop(
-            "Error de conexión al modificar el traslado.",
+            LANG.msg_error_conexion_modificar ||
+              "Error de conexión al modificar el traslado.",
             "danger",
           );
         });
@@ -637,8 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const btn = this;
       const originalText = btn.innerHTML;
-      btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm me-2"></span>Cancelando...';
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${LANG.msg_cancelando || "Cancelando..."}`;
       btn.disabled = true;
 
       const formData = new FormData();
@@ -659,12 +676,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (data.status === "success") {
             mostrarAlertaTrasladosTop(
-              "Traslado AMB-" + trasladoACancelar + " cancelado correctamente.",
+              (
+                LANG.msg_traslado_cancelado ||
+                "Traslado AMB-{id} cancelado correctamente."
+              ).replace("{id}", trasladoACancelar),
               "success",
             );
-            cargarTraslados(); // Refresca la tabla
+            cargarTraslados();
           } else {
-            mostrarAlertaTrasladosTop("Error: " + data.mensaje, "danger");
+            mostrarAlertaTrasladosTop(
+              (LANG.msg_error || "Error: ") + data.mensaje,
+              "danger",
+            );
           }
           trasladoACancelar = null;
         })
@@ -676,7 +699,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modalConfirmarCancelacion"),
           ).hide();
           mostrarAlertaTrasladosTop(
-            "Error de conexión al cancelar el traslado.",
+            LANG.msg_error_conexion_cancelar ||
+              "Error de conexión al cancelar el traslado.",
             "danger",
           );
           trasladoACancelar = null;
@@ -697,26 +721,38 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.innerHTML = "";
 
         if (datos.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="9" class="text-center text-muted py-4">No hay traslados activos registrados.</td></tr>';
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">${LANG.msg_sin_traslados_activos || "No hay traslados activos registrados."}</td></tr>`;
           return;
         }
 
         datos.forEach((t) => {
           let claseEstado = "b-prep";
-          let textoEstado = t.estado || "Pendiente";
+          let textoEstado = t.estado || LANG.estado_pendiente || "Pendiente";
           const estadoMin = textoEstado.toLowerCase();
 
-          // 1. Lógica para el color Naranja en el estado "En Camino"
           let estiloNaranja = "";
-          if (estadoMin.includes("camino") || estadoMin.includes("transito")) {
-            claseEstado = ""; // Quitamos la clase azul por defecto
+          if (
+            estadoMin.includes("camino") ||
+            estadoMin.includes("transito") ||
+            estadoMin.includes("transit")
+          ) {
+            claseEstado = "";
             estiloNaranja =
-              "background-color: #fd7e14; color: white; border: none;"; // Naranja Bootstrap
-          } else if (estadoMin.includes("completado"))
+              "background-color: #fd7e14; color: white; border: none;";
+          } else if (
+            estadoMin.includes("completado") ||
+            estadoMin.includes("completed")
+          )
             claseEstado = "b-completado";
-          else if (estadoMin.includes("asignado")) claseEstado = "b-programado";
-          else if (estadoMin.includes("cancelado"))
+          else if (
+            estadoMin.includes("asignado") ||
+            estadoMin.includes("assigned")
+          )
+            claseEstado = "b-programado";
+          else if (
+            estadoMin.includes("cancelado") ||
+            estadoMin.includes("canceled")
+          )
             claseEstado = "bg-danger text-white";
 
           tbody.innerHTML += `
@@ -730,43 +766,44 @@ document.addEventListener("DOMContentLoaded", () => {
               <td>${t.destino || "-"}</td>
               <td><span class="badge-estado ${claseEstado}" style="${estiloNaranja}">${textoEstado.replace("_", " ")}</span></td>
               
-              <!-- 2. Botón desplegable de acciones dinámico -->
               <td class="text-center">
                 <div class="dropdown">
                   <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-gear-fill"></i> Opciones
+                    <i class="bi bi-gear-fill"></i> ${LANG.btn_opciones || "Opciones"}
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
                       <a class="dropdown-item text-info fw-bold" href="#" onclick="verSeguimiento(${t.id_traslado}); return false;">
-                        <i class="bi bi-geo-alt-fill me-2"></i> Ver Seguimiento
+                        <i class="bi bi-geo-alt-fill me-2"></i> ${LANG.btn_ver_seguimiento || "Ver Seguimiento"}
                       </a>
                     </li>
                     
                     ${
                       !estadoMin.includes("cancelado") &&
-                      !estadoMin.includes("completado")
+                      !estadoMin.includes("canceled") &&
+                      !estadoMin.includes("completado") &&
+                      !estadoMin.includes("completed")
                         ? `
                     <li>
                       <a class="dropdown-item text-success fw-bold" href="#" onclick="abrirModalEstado(${t.id_traslado}, '${textoEstado}'); return false;">
-                        <i class="bi bi-clock-history me-2"></i> Registrar Avance
+                        <i class="bi bi-clock-history me-2"></i> ${LANG.btn_registrar_avance || "Registrar Avance"}
                       </a>
                     </li>
                     <li>
                       <a class="dropdown-item text-primary" href="#" onclick="modificarTraslado(${t.id_traslado}); return false;">
-                        <i class="bi bi-pencil-square me-2"></i> Modificar traslado
+                        <i class="bi bi-pencil-square me-2"></i> ${LANG.btn_modificar_traslado || "Modificar traslado"}
                       </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                       <a class="dropdown-item text-danger" href="#" onclick="cancelarTraslado(${t.id_traslado}); return false;">
-                        <i class="bi bi-x-circle me-2"></i> Cancelar viaje
+                        <i class="bi bi-x-circle me-2"></i> ${LANG.btn_cancelar_viaje || "Cancelar viaje"}
                       </a>
                     </li>
                     `
                         : `
                     <li><hr class="dropdown-divider"></li>
-                    <li><span class="dropdown-item-text text-muted small"><i class="bi bi-lock-fill"></i> Viaje cerrado</span></li>
+                    <li><span class="dropdown-item-text text-muted small"><i class="bi bi-lock-fill"></i> ${LANG.btn_viaje_cerrado || "Viaje cerrado"}</span></li>
                     `
                     }
                   </ul>
@@ -789,8 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.innerHTML = "";
 
         if (datos.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="7" class="text-center text-muted py-4">No hay solicitudes pendientes.</td></tr>';
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">${LANG.msg_sin_solicitudes_pendientes || "No hay solicitudes pendientes."}</td></tr>`;
           return;
         }
 
@@ -804,22 +840,21 @@ document.addEventListener("DOMContentLoaded", () => {
               <td>${s.destino}</td>
               <td><small class="text-muted">${s.motivo}</small></td>
               
-              <!-- Botón desplegable de acciones para solicitudes -->
               <td class="text-center">
                 <div class="dropdown">
                   <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-list-check"></i> Acciones
+                    <i class="bi bi-list-check"></i> ${LANG.btn_acciones || "Acciones"}
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
                       <a class="dropdown-item text-success fw-bold" href="#" onclick="abrirModalAsignacion(${s.id_solicitud}, '${s.categoria_traslado}', '${s.tipo_movilidad}', ${s.requiere_soporte_uti}); return false;">
-                        <i class="bi bi-check-lg me-2"></i> Aprobar (Asignar)
+                        <i class="bi bi-check-lg me-2"></i> ${LANG.btn_aprobar_asignar || "Aprobar (Asignar)"}
                       </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                       <a class="dropdown-item text-danger" href="#" onclick="rechazarSolicitud(${s.id_solicitud}); return false;">
-                        <i class="bi bi-x-lg me-2"></i> Rechazar
+                        <i class="bi bi-x-lg me-2"></i> ${LANG.btn_rechazar || "Rechazar"}
                       </a>
                     </li>
                   </ul>
@@ -832,6 +867,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(console.error);
   }
+
   /* --- CARGA DINÁMICA DEL DASHBOARD --- */
   function cargarDashboard() {
     fetch("../controlador/traslado_controlador.php?accion=datos_dashboard")
@@ -839,20 +875,17 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((data) => {
         if (data.status === "error") return;
 
-        // 1. Actualizar Tarjetas Estadísticas
         const elActivos = document.getElementById("dash-traslados-activos");
         const elDia = document.getElementById("dash-traslados-dia");
         if (elActivos) elActivos.textContent = data.traslados_activos || 0;
         if (elDia) elDia.textContent = data.traslados_dia || 0;
 
-        // 2. Actualizar Lista de Traslados Activos
         const contLista = document.getElementById("dash-lista-activos");
         if (!contLista) return;
         contLista.innerHTML = "";
 
         if (!data.lista_activos || data.lista_activos.length === 0) {
-          contLista.innerHTML =
-            '<p class="text-muted text-center py-3 mb-0">No hay traslados activos en este momento.</p>';
+          contLista.innerHTML = `<p class="text-muted text-center py-3 mb-0">${LANG.msg_sin_activos_dashboard || "No hay traslados activos en este momento."}</p>`;
           return;
         }
 
@@ -860,37 +893,50 @@ document.addEventListener("DOMContentLoaded", () => {
           let estadoTxt = t.estado || "ASIGNADO";
           let estadoMin = estadoTxt.toLowerCase();
 
-          // Lógica de progreso por etapas (Mini Línea de Tiempo)
           let porcentaje = 25;
-          let textoProgreso = "1/3 - Recursos asignados (En Base)";
+          let textoProgreso =
+            LANG.progreso_1 || "1/3 - Recursos asignados (En Base)";
           let claseBadge = "b-prep";
           let barraClase = "progress-bar-primary";
           let estiloNaranja = "";
 
-          if (estadoMin.includes("asignado")) {
+          if (
+            estadoMin.includes("asignado") ||
+            estadoMin.includes("assigned")
+          ) {
             porcentaje = 25;
-            textoProgreso = "1/3 - Recursos asignados (En Base)";
+            textoProgreso =
+              LANG.progreso_1 || "1/3 - Recursos asignados (En Base)";
             claseBadge = "b-programado";
           } else if (
             estadoMin.includes("salida") ||
-            estadoMin.includes("preparacion")
+            estadoMin.includes("departure") ||
+            estadoMin.includes("preparacion") ||
+            estadoMin.includes("preparation")
           ) {
             porcentaje = 50;
-            textoProgreso = "2/3 - Vehículo preparado / Saliendo";
+            textoProgreso =
+              LANG.progreso_2 || "2/3 - Vehículo preparado / Saliendo";
             claseBadge = "b-salida";
             barraClase = "progress-bar-amber";
           } else if (
             estadoMin.includes("camino") ||
-            estadoMin.includes("transito")
+            estadoMin.includes("transito") ||
+            estadoMin.includes("transit") ||
+            estadoMin.includes("way")
           ) {
             porcentaje = 75;
-            textoProgreso = "3/3 - En tránsito hacia destino";
+            textoProgreso =
+              LANG.progreso_3 || "3/3 - En tránsito hacia destino";
             claseBadge = "";
             estiloNaranja =
-              "background-color: #fd7e14; color: white; border: none;"; // Naranja Bootstrap
-          } else if (estadoMin.includes("completado")) {
+              "background-color: #fd7e14; color: white; border: none;";
+          } else if (
+            estadoMin.includes("completado") ||
+            estadoMin.includes("completed")
+          ) {
             porcentaje = 100;
-            textoProgreso = "Llegada confirmada";
+            textoProgreso = LANG.progreso_4 || "Llegada confirmada";
             claseBadge = "b-completado";
             barraClase = "bg-success";
           }
@@ -900,7 +946,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div>
                   <h6 class="mb-1">AMB-${t.id_traslado} – ${t.paciente_elemento}</h6>
-                  <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>Destino: ${t.destino}</small>
+                  <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>${LANG.traslados_th_destino || "Destino"}: ${t.destino}</small>
                 </div>
                 <span class="badge-estado ${claseBadge}" style="${estiloNaranja}">${estadoTxt.replace("_", " ")}</span>
               </div>
@@ -910,7 +956,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="d-flex justify-content-between align-items-center mt-2">
                 <small class="text-muted fw-semibold text-xs">${textoProgreso}</small>
                 <small class="text-primary text-xs" style="cursor:pointer; font-weight:600;" onclick="verSeguimiento(${t.id_traslado})">
-                  Ver detalle <i class="bi bi-arrow-right"></i>
+                  ${LANG.btn_ver_detalle || "Ver detalle"} <i class="bi bi-arrow-right"></i>
                 </small>
               </div>
             </div>`;
@@ -926,30 +972,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- SEGUIMIENTO DINÁMICO --- */
   window.verSeguimiento = function (id_traslado) {
-    // 1. Cambiar a la pestaña de seguimiento
     document.querySelector('[data-view="seguimiento"]').click();
 
-    // Mostrar loader temporal
     document.getElementById("seg-empty-state").classList.add("d-none");
     document.getElementById("seg-content-container").classList.remove("d-none");
     document.getElementById("seg-timeline-container").innerHTML =
-      '<div class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Cargando ruta...</div>';
+      `<div class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> ${LANG.msg_cargando_ruta || "Cargando ruta..."}</div>`;
 
-    // 2. Traer datos
     fetch(
       `../controlador/traslado_controlador.php?accion=seguimiento&id_traslado=${id_traslado}`,
     )
       .then((res) => res.json())
       .then((data) => {
-        // Manejo de error: Si el traslado no existe
         if (data.status !== "success") {
-          // Volver a mostrar el estado inicial (ocultar el loader)
           document.getElementById("seg-empty-state").classList.remove("d-none");
           document
             .getElementById("seg-content-container")
             .classList.add("d-none");
 
-          // Mostrar alerta en pantalla
           const alertCont = document.getElementById(
             "alert-seguimiento-container",
           );
@@ -957,7 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alertCont.innerHTML = `
               <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                <div>${data.mensaje || "El traslado solicitado no existe."}</div>
+                <div>${data.mensaje || LANG.msg_traslado_no_existe || "El traslado solicitado no existe."}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
               </div>`;
             setTimeout(() => {
@@ -970,7 +1010,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const det = data.detalle;
         const hist = data.historial;
 
-        // Llenar Tarjeta Izquierda
         document.getElementById("seg-titulo").textContent =
           `AMB-${det.id_traslado}`;
         document.getElementById("seg-paciente").textContent =
@@ -980,54 +1019,65 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("seg-conductor").textContent =
           det.conductor || "-";
         document.getElementById("seg-enfermero").textContent =
-          det.enfermero || "No asignado";
+          det.enfermero || LANG.msg_no_asignado || "No asignado";
         document.getElementById("seg-origen").textContent = det.origen;
         document.getElementById("seg-destino").textContent = det.destino;
 
-        // Determinar estado actual y barra
-        let progreso = 25; // Base Asignado
-        let badgeClass = "b-programado"; // Azul por defecto para Asignado
-        let estadoActual = "Asignado";
-        let estiloNaranja = ""; // Variable para forzar naranja
+        let progreso = 25;
+        let badgeClass = "b-programado";
+        let estadoActual = LANG.estado_asignado || "Asignado";
+        let estiloNaranja = "";
 
         if (hist.length > 0) {
           estadoActual = hist[hist.length - 1].estado;
           const estadoMin = estadoActual.toLowerCase();
 
-          if (estadoMin.includes("camino") || estadoMin.includes("transito")) {
+          if (
+            estadoMin.includes("camino") ||
+            estadoMin.includes("transito") ||
+            estadoMin.includes("transit")
+          ) {
             progreso = 65;
-            badgeClass = ""; // Quitamos clase para que no choque
+            badgeClass = "";
             estiloNaranja =
-              "background-color: #fd7e14; color: white; border: none;"; // Naranja
-          } else if (estadoMin.includes("completado")) {
+              "background-color: #fd7e14; color: white; border: none;";
+          } else if (
+            estadoMin.includes("completado") ||
+            estadoMin.includes("completed")
+          ) {
             progreso = 100;
             badgeClass = "b-completado";
-          } else if (estadoMin.includes("cancelado")) {
+          } else if (
+            estadoMin.includes("cancelado") ||
+            estadoMin.includes("canceled")
+          ) {
             progreso = 100;
             badgeClass = "bg-danger text-white border-0";
-          } else if (estadoMin.includes("asignado")) {
+          } else if (
+            estadoMin.includes("asignado") ||
+            estadoMin.includes("assigned")
+          ) {
             progreso = 25;
-            badgeClass = "b-programado"; // Azul
+            badgeClass = "b-programado";
           }
         }
 
         const badgeSeg = document.getElementById("seg-badge");
         badgeSeg.className = `badge-estado ${badgeClass}`;
-        badgeSeg.style.cssText = estiloNaranja; // Aplica naranja si es en camino, o limpia estilos extra
+        badgeSeg.style.cssText = estiloNaranja;
         badgeSeg.textContent = estadoActual.replace("_", " ");
 
         const bar = document.getElementById("seg-progress-bar");
         bar.style.width = progreso + "%";
-        bar.className = `progress-bar ${progreso === 100 ? (estadoActual.includes("CANCELADO") ? "bg-danger" : "bg-success") : "progress-bar-primary"}`;
-        // 3. Dibujar Línea de Tiempo
+        bar.className = `progress-bar ${progreso === 100 ? (estadoActual.includes("CANCELADO") || estadoActual.includes("CANCELED") ? "bg-danger" : "bg-success") : "progress-bar-primary"}`;
+
         let timelineHTML = "";
 
-        // Paso base
         timelineHTML += createTimelineStep(
           "done",
           "bi-file-earmark-check",
-          "Solicitud creada",
-          "Ingresada y procesada",
+          LANG.timeline_solicitud_creada || "Solicitud creada",
+          LANG.timeline_ingresada_procesada || "Ingresada y procesada",
           true,
         );
 
@@ -1041,14 +1091,18 @@ document.addEventListener("DOMContentLoaded", () => {
           let dot = "done";
           let icon = "bi-check-lg";
 
-          if (est.includes("CANCELADO")) {
+          if (est.includes("CANCELADO") || est.includes("CANCELED")) {
             dot = "bg-danger text-white";
             icon = "bi-x-lg";
             cancelado = true;
-          } else if (est.includes("CAMINO") || est.includes("TRANSITO")) {
+          } else if (
+            est.includes("CAMINO") ||
+            est.includes("TRANSITO") ||
+            est.includes("TRANSIT")
+          ) {
             icon = "bi-truck";
             if (isLast) dot = "current";
-          } else if (est.includes("COMPLETADO")) {
+          } else if (est.includes("COMPLETADO") || est.includes("COMPLETED")) {
             icon = "bi-flag-fill";
             completado = true;
           }
@@ -1062,20 +1116,19 @@ document.addEventListener("DOMContentLoaded", () => {
           );
         });
 
-        // Pasos futuros (solo si no ha terminado)
         if (!completado && !cancelado) {
           if (progreso < 65)
             timelineHTML += createTimelineStep(
               "pending",
               "bi-truck",
-              "En Tránsito",
-              "Vehículo en movimiento",
+              LANG.timeline_en_transito || "En Tránsito",
+              LANG.timeline_vehiculo_movimiento || "Vehículo en movimiento",
               false,
             );
           timelineHTML += createTimelineStep(
             "pending",
             "bi-geo-alt",
-            "Llegada a Destino",
+            LANG.timeline_llegada_destino || "Llegada a Destino",
             det.destino,
             false,
           );
@@ -1087,7 +1140,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((err) => console.error("Error al cargar seguimiento:", err));
   };
 
-  // Helper HTML para la Línea de Tiempo
   function createTimelineStep(dotClass, iconClass, title, subtitle, isActive) {
     return `
         <div class="timeline-item">
@@ -1099,6 +1151,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
   }
+
   /* --- BARRA DE FILTROS EN TIEMPO REAL --- */
   const inputFiltroTexto = document.getElementById("filtro-texto");
   const selectFiltroEstado = document.getElementById("filtro-estado");
@@ -1109,12 +1162,11 @@ document.addEventListener("DOMContentLoaded", () => {
       ? selectFiltroEstado.value.toLowerCase()
       : "";
 
-    // 1. Filtrar tabla de Traslados Confirmados
     const filasTraslados = document.querySelectorAll(
       "#tabla-traslados-body tr",
     );
     filasTraslados.forEach((fila) => {
-      if (fila.cells.length === 1) return; // Ignora la fila de "Cargando..." o "Sin datos" si abarca toda la tabla
+      if (fila.cells.length === 1) return;
 
       const textoFila = fila.textContent.toLowerCase();
       const badge = fila.querySelector(".badge-estado");
@@ -1123,7 +1175,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const coincideTexto = textoFila.includes(texto);
       const coincideEstado = estado === "" || estadoFila.includes(estado);
 
-      // Si el usuario elige ver solo "pendientes", ocultamos todos los traslados confirmados
       if (estado === "pendiente") {
         fila.style.display = "none";
       } else {
@@ -1131,17 +1182,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 2. Filtrar tabla de Solicitudes Pendientes
     const filasSolicitudes = document.querySelectorAll(
       "#tabla-solicitudes-body tr",
     );
     filasSolicitudes.forEach((fila) => {
-      if (fila.cells.length === 1) return; // Ignora la fila de "Cargando..."
+      if (fila.cells.length === 1) return;
 
       const textoFila = fila.textContent.toLowerCase();
       const coincideTexto = textoFila.includes(texto);
 
-      // Las solicitudes siempre son "pendientes". Si el usuario elige un estado distinto, se ocultan.
       const coincideEstado = estado === "" || estado === "pendiente";
 
       fila.style.display = coincideTexto && coincideEstado ? "" : "none";
@@ -1163,16 +1212,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (id === "") {
       mostrarAlertaTrasladosTop(
-        "Por favor, ingrese el ID numérico del traslado.",
+        LANG.msg_ingrese_id_numerico ||
+          "Por favor, ingrese el ID numérico del traslado.",
         "warning",
       );
       return;
     }
 
-    // Aprovechamos la función verSeguimiento que ya hace todo el trabajo
     verSeguimiento(id);
-
-    // Limpiamos el input después de buscar
     inputBuscarSeg.value = "";
   }
 
@@ -1188,13 +1235,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
   /* --- ACTUALIZAR ESTADO Y OBSERVACIONES (MODAL) --- */
   window.abrirModalEstado = function (id, estadoTxt) {
     document.getElementById("lbl_estado_id").textContent = id;
     document.getElementById("estado_id_traslado").value = id;
     document.getElementById("formActualizarEstado").reset();
 
-    // Evaluar estado actual
     const selectEstado = document.querySelector(
       '#formActualizarEstado select[name="id_estado"]',
     );
@@ -1204,16 +1251,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (opt.value === "") return;
       const val = parseInt(opt.value);
 
-      // RESTRICCIÓN: Si ya está en camino, desactivar opción "En camino" para obligar a elegir "Completado"
-      if (estadoMin.includes("camino") || estadoMin.includes("transito")) {
+      if (
+        estadoMin.includes("camino") ||
+        estadoMin.includes("transito") ||
+        estadoMin.includes("transit")
+      ) {
         opt.disabled = val <= 2;
       } else {
         opt.disabled = false;
       }
     });
 
-    // Autoseleccionar la opción "Completado" si ya estaba "En camino"
-    if (estadoMin.includes("camino") || estadoMin.includes("transito")) {
+    if (
+      estadoMin.includes("camino") ||
+      estadoMin.includes("transito") ||
+      estadoMin.includes("transit")
+    ) {
       selectEstado.value = "3";
     }
 
@@ -1230,8 +1283,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const btn = document.getElementById("btnGuardarEstado");
       const textoOrig = btn.innerHTML;
-      btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm me-2"></span>Actualizando...';
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${LANG.msg_actualizando || "Actualizando..."}`;
       btn.disabled = true;
 
       const formData = new FormData(this);
@@ -1251,15 +1303,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (data.status === "success") {
             mostrarAlertaTrasladosTop(
-              "Avance registrado en el traslado AMB-" +
-                formData.get("id_traslado") +
-                ".",
+              (
+                LANG.msg_avance_registrado ||
+                "Avance registrado en el traslado AMB-{id}."
+              ).replace("{id}", formData.get("id_traslado")),
               "success",
             );
-            cargarTraslados(); // Refrescar la tabla
-            cargarDashboard(); // Refrescar los indicadores principales
+            cargarTraslados();
+            cargarDashboard();
           } else {
-            mostrarAlertaTrasladosTop("Error: " + data.mensaje, "danger");
+            mostrarAlertaTrasladosTop(
+              (LANG.msg_error || "Error: ") + data.mensaje,
+              "danger",
+            );
           }
         })
         .catch((err) => {
@@ -1269,7 +1325,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modalActualizarEstado"),
           ).hide();
           mostrarAlertaTrasladosTop(
-            "Error de conexión al registrar el avance.",
+            LANG.msg_error_conexion_avance ||
+              "Error de conexión al registrar el avance.",
             "danger",
           );
         });
