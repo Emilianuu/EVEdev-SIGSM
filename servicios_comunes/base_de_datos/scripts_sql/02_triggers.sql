@@ -174,6 +174,91 @@ BEGIN
 
 END$$
 
+-- Valida compatibilidad y disponibilidad cuando se MODIFICA el vehículo de un traslado
+CREATE TRIGGER trg_traslado_validaciones_upd
+BEFORE UPDATE ON TRASLADO
+FOR EACH ROW
+BEGIN
+    DECLARE v_disponibilidad VARCHAR(20);
+    DECLARE v_apto_sr, v_apto_cam, v_apto_uti, v_apto_bio, v_apto_ins BOOLEAN;
+    DECLARE v_cat ENUM('PACIENTE', 'MATERIAL_BIOLOGICO', 'EQUIPAMIENTO', 'INSUMOS');
+    DECLARE v_movilidad ENUM('AMBULATORIO', 'SILLA_RUEDAS', 'CAMILLA', 'NO_APLICA');
+    DECLARE v_uti BOOLEAN;
+    DECLARE v_sol_origen, v_sol_destino, v_ruta_origen, v_ruta_destino INT;
+    DECLARE v_estado_actual VARCHAR(50);
+
+    -- Obtener el estado actual del traslado desde el historial
+    SELECT e.nombre INTO v_estado_actual
+      FROM HISTORIAL_ESTADO he
+      JOIN ESTADO_TRASLADO e ON he.id_estado = e.id_estado
+     WHERE he.id_traslado = NEW.id_traslado
+  ORDER BY he.id_historial DESC LIMIT 1;
+
+    -- Si ya está en camino (o cerrado), bloquear cualquier actualización de vehículo/ruta
+    IF v_estado_actual IN ('EN_CAMINO', 'COMPLETADO', 'CANCELADO') THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Operación denegada: No se puede modificar un traslado que ya está en curso o finalizado.';
+    END IF;
+
+    -- Solo ejecutar validaciones si se cambió el vehículo o la ruta
+    IF NEW.id_vehiculo <> OLD.id_vehiculo OR NEW.id_ruta <> OLD.id_ruta THEN
+        
+        -- Obtener datos del nuevo Vehículo
+        SELECT v.estado_disponibilidad, tv.apto_silla_ruedas, tv.apto_camilla, tv.apto_uti, tv.apto_biologico, tv.apto_insumos
+          INTO v_disponibilidad, v_apto_sr, v_apto_cam, v_apto_uti, v_apto_bio, v_apto_ins
+          FROM VEHICULO v JOIN TIPO_VEHICULO tv ON v.id_tipo_vehiculo = tv.id_tipo_vehiculo 
+         WHERE v.id_vehiculo = NEW.id_vehiculo;
+
+        -- Si es un vehículo distinto, validar que esté disponible
+        IF NEW.id_vehiculo <> OLD.id_vehiculo AND v_disponibilidad <> 'DISPONIBLE' THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nuevo vehículo asignado no está DISPONIBLE.';
+        END IF;
+
+        -- Obtener datos de la Solicitud
+        SELECT categoria_traslado, tipo_movilidad, requiere_soporte_uti, id_origen, id_destino
+          INTO v_cat, v_movilidad, v_uti, v_sol_origen, v_sol_destino
+          FROM SOLICITUD_TRASLADO WHERE id_solicitud = NEW.id_solicitud;
+
+        -- Validación de capacidades para el nuevo vehículo
+        IF v_cat = 'PACIENTE' THEN
+            IF v_uti = TRUE AND v_apto_uti = FALSE THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nuevo vehículo no tiene soporte UTI/Respirador.';
+            END IF;
+            IF v_movilidad = 'SILLA_RUEDAS' AND v_apto_sr = FALSE THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nuevo vehículo no está adaptado para silla de ruedas.';
+            END IF;
+            IF v_movilidad = 'CAMILLA' AND v_apto_cam = FALSE THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nuevo vehículo no tiene espacio para camilla.';
+            END IF;
+        ELSEIF v_cat = 'MATERIAL_BIOLOGICO' AND v_apto_bio = FALSE THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nuevo vehículo no cuenta con cadena de frío / permisos biológicos.';
+        ELSEIF v_cat IN ('EQUIPAMIENTO', 'INSUMOS') AND v_apto_ins = FALSE THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El nuevo vehículo no es apto para logística pesada/voluminosa.';
+        END IF;
+
+        -- Validación de la ruta si fue modificada
+        IF NEW.id_ruta <> OLD.id_ruta THEN
+            SELECT id_origen, id_destino INTO v_ruta_origen, v_ruta_destino FROM RUTA WHERE id_ruta = NEW.id_ruta;
+            IF v_ruta_origen <> v_sol_origen OR v_ruta_destino <> v_sol_destino THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La nueva ruta asignada no coincide con el origen/destino de la solicitud.';
+            END IF;
+        END IF;
+        
+    END IF;
+END$$
+
+-- Gestionar estados si se cambia el vehículo de un traslado ya existente
+CREATE TRIGGER trg_traslado_reasigna_vehiculo
+AFTER UPDATE ON TRASLADO
+FOR EACH ROW
+BEGIN
+    -- Si se reasignó un vehículo distinto, se debe liberar el viejo y ocupar el nuevo
+    IF NEW.id_vehiculo <> OLD.id_vehiculo THEN
+        UPDATE VEHICULO SET estado_disponibilidad = 'DISPONIBLE' WHERE id_vehiculo = OLD.id_vehiculo;
+        UPDATE VEHICULO SET estado_disponibilidad = 'EN_USO' WHERE id_vehiculo = NEW.id_vehiculo;
+    END IF;
+END$$
+
 -- Un traslado no puede tener proveedor externo y personal propio a la vez
 CREATE TRIGGER trg_personaltraslado_exclusion
 BEFORE INSERT ON PERSONAL_TRASLADO

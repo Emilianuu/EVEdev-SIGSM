@@ -78,8 +78,9 @@ try {
   // DATOS PARA LA PESTAÑA "RECURSOS" (ESTADÍSTICAS EN VIVO)
   // =========================================================
 
-  // VEHÍCULOS (Todos)
+  // VEHÍCULOS (Todos - Ahora incluye capacidades de compatibilidad)
   $sqlTodosVehiculos = "SELECT v.id_vehiculo, v.matricula, tv.nombre as tipo, v.estado_disponibilidad,
+                          tv.apto_silla_ruedas, tv.apto_camilla, tv.apto_uti, tv.apto_biologico, tv.apto_insumos,
                           (SELECT CONCAT(p.nombre, ' ', p.apellido) 
                            FROM PERSONAL p JOIN TRASLADO t ON t.id_vehiculo = v.id_vehiculo 
                            JOIN PERSONAL_TRASLADO pt ON pt.id_traslado = t.id_traslado 
@@ -820,7 +821,15 @@ try {
                   <label class="form-label fw-bold"><?= $lang['lbl_vehiculo'] ?> <span class="text-danger">*</span></label>
                   <select class="form-select" name="vehiculo" id="mod_vehiculo" required>
                     <?php foreach ($todosVehiculos as $v): ?>
-                      <option value="<?= $v['id_vehiculo'] ?>"><?= htmlspecialchars($v['tipo'] . ' - ' . $v['matricula']) ?></option>
+                      <option value="<?= $v['id_vehiculo'] ?>"
+                        data-sr="<?= $v['apto_silla_ruedas'] ?>"
+                        data-cam="<?= $v['apto_camilla'] ?>"
+                        data-uti="<?= $v['apto_uti'] ?>"
+                        data-bio="<?= $v['apto_biologico'] ?>"
+                        data-ins="<?= $v['apto_insumos'] ?>"
+                        data-estado="<?= $v['estado_disponibilidad'] ?>">
+                        <?= htmlspecialchars($v['tipo'] . ' - ' . $v['matricula']) ?>
+                      </option>
                     <?php endforeach; ?>
                   </select>
                 </div>

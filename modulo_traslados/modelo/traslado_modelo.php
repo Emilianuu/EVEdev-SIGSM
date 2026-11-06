@@ -223,11 +223,15 @@ class TrasladoModelo
     {
         global $conexion;
         try {
+            // Se agrega el JOIN con SOLICITUD_TRASLADO para traer las compatibilidades
             $sql = "SELECT t.id_traslado, t.id_vehiculo,
+                           s.categoria_traslado, s.tipo_movilidad, s.requiere_soporte_uti,
                            (SELECT pt.id_personal FROM PERSONAL_TRASLADO pt WHERE pt.id_traslado = t.id_traslado AND pt.rol_en_traslado = 'CONDUCTOR' LIMIT 1) as id_conductor,
                            (SELECT pt.id_personal FROM PERSONAL_TRASLADO pt WHERE pt.id_traslado = t.id_traslado AND pt.rol_en_traslado = 'ENFERMERO' LIMIT 1) as id_enfermero,
                            (SELECT id_estado FROM HISTORIAL_ESTADO WHERE id_traslado = t.id_traslado ORDER BY id_historial DESC LIMIT 1) as id_estado
-                    FROM TRASLADO t WHERE t.id_traslado = ?";
+                    FROM TRASLADO t 
+                    JOIN SOLICITUD_TRASLADO s ON t.id_solicitud = s.id_solicitud
+                    WHERE t.id_traslado = ?";
             $stmt = $conexion->prepare($sql);
             $stmt->execute([$id_traslado]);
             return $stmt->fetch(PDO::FETCH_ASSOC);

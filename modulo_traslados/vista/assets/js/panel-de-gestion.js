@@ -557,8 +557,63 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("mod_title_id").textContent = id;
           document.getElementById("mod_id_traslado").value = id;
 
-          document.getElementById("mod_vehiculo").value =
-            data.id_vehiculo || "";
+          // Lógica de filtrado de vehículos
+          const selectVehiculo = document.getElementById("mod_vehiculo");
+          const opciones = selectVehiculo.querySelectorAll("option");
+
+          const cat = data.categoria_traslado;
+          const mov = data.tipo_movilidad;
+          const uti = data.requiere_soporte_uti;
+          const vehiculoActualId = data.id_vehiculo;
+
+          opciones.forEach((opt) => {
+            let esCompatible = true;
+
+            // 1. Evaluar si es compatible con el tipo de traslado
+            if (cat === "PACIENTE") {
+              if (uti == 1 && opt.getAttribute("data-uti") == "0")
+                esCompatible = false;
+              if (mov === "SILLA_RUEDAS" && opt.getAttribute("data-sr") == "0")
+                esCompatible = false;
+              if (mov === "CAMILLA" && opt.getAttribute("data-cam") == "0")
+                esCompatible = false;
+            } else if (
+              cat === "MATERIAL_BIOLOGICO" &&
+              opt.getAttribute("data-bio") == "0"
+            ) {
+              esCompatible = false;
+            } else if (
+              (cat === "EQUIPAMIENTO" || cat === "INSUMOS") &&
+              opt.getAttribute("data-ins") == "0"
+            ) {
+              esCompatible = false;
+            }
+
+            // 2. Evaluar si está disponible (o si es el vehículo actualmente asignado a ESTE traslado)
+            const estado = opt.getAttribute("data-estado");
+            const esElActual = opt.value == vehiculoActualId;
+            const estaDisponible = estado === "DISPONIBLE";
+
+            const txtNoCompatible = LANG.msg_no_compatible || "(No compatible)";
+            const txtEnUso = "(En uso)";
+
+            // Limpiar textos previos
+            opt.text = opt.text
+              .replace(` ${txtNoCompatible}`, "")
+              .replace(` ${txtEnUso}`, "");
+
+            if (esCompatible && (estaDisponible || esElActual)) {
+              opt.disabled = false;
+            } else {
+              opt.disabled = true;
+              if (!esCompatible) opt.text += ` ${txtNoCompatible}`;
+              else if (!estaDisponible && !esElActual)
+                opt.text += ` ${txtEnUso}`;
+            }
+          });
+
+          // Seleccionar valores
+          selectVehiculo.value = vehiculoActualId || "";
           document.getElementById("mod_conductor").value =
             data.id_conductor || "";
           document.getElementById("mod_enfermero").value =
@@ -789,11 +844,27 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="bi bi-clock-history me-2"></i> ${LANG.btn_registrar_avance || "Registrar Avance"}
                       </a>
                     </li>
+                    
+                    ${
+                      !(
+                        estadoMin.includes("camino") ||
+                        estadoMin.includes("transito") ||
+                        estadoMin.includes("transit")
+                      )
+                        ? `
                     <li>
                       <a class="dropdown-item text-primary" href="#" onclick="modificarTraslado(${t.id_traslado}); return false;">
                         <i class="bi bi-pencil-square me-2"></i> ${LANG.btn_modificar_traslado || "Modificar traslado"}
                       </a>
                     </li>
+                    `
+                        : `
+                    <li>
+                      <span class="dropdown-item-text text-muted small" title="El vehículo ya salió de base"><i class="bi bi-shield-lock me-1"></i> No modificable en ruta</span>
+                    </li>
+                    `
+                    }
+
                     <li><hr class="dropdown-divider"></li>
                     <li>
                       <a class="dropdown-item text-danger" href="#" onclick="cancelarTraslado(${t.id_traslado}); return false;">
