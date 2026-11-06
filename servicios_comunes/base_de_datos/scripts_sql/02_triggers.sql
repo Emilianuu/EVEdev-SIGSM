@@ -243,19 +243,22 @@ BEGIN
         UPDATE SOLICITUD_TRASLADO SET estado_solicitud = 'EN_CAMINO' WHERE id_solicitud = v_id_solicitud;
     END IF;
 
-    -- Ocupa el vehículo solo cuando el traslado inicia realmente
-    IF v_nombre_estado = 'EN_CAMINO' THEN
-        UPDATE VEHICULO v JOIN TRASLADO t ON t.id_vehiculo = v.id_vehiculo
-           SET v.estado_disponibilidad = 'EN_USO'
-         WHERE t.id_traslado = NEW.id_traslado;
-    END IF;
-
     -- Libera el vehículo cuando el traslado se completa o cancela
     IF v_nombre_estado IN ('COMPLETADO', 'CANCELADO') THEN
         UPDATE VEHICULO v JOIN TRASLADO t ON t.id_vehiculo = v.id_vehiculo
            SET v.estado_disponibilidad = 'DISPONIBLE'
          WHERE t.id_traslado = NEW.id_traslado;
     END IF;
+END$$
+
+-- Ocupa el vehículo de forma inmediata al asignarlo a un traslado
+CREATE TRIGGER trg_traslado_ocupa_vehiculo
+AFTER INSERT ON TRASLADO
+FOR EACH ROW
+BEGIN
+    UPDATE VEHICULO 
+    SET estado_disponibilidad = 'EN_USO' 
+    WHERE id_vehiculo = NEW.id_vehiculo;
 END$$
 
 DELIMITER ;
