@@ -213,7 +213,7 @@ INSERT INTO PERSONAL (ci, nombre, apellido, rol_personal, activo) VALUES
 
 -- SOLICITUD 6: Traslado completado (Humano, Camilla)
 INSERT INTO SOLICITUD_TRASLADO (categoria_traslado, ci_paciente, detalle_carga, tipo_movilidad, requiere_soporte_uti, id_origen, id_destino, id_canal, id_usuario_solicit, fecha_solicitud, motivo, estado_solicitud) 
-VALUES ('PACIENTE', '47651239', NULL, 'CAMILLA', FALSE, 9, 1, 1, 3, DATE_SUB(NOW(), INTERVAL 2 DAY), 'Ingreso por urgencia', 'COMPLETADA');
+VALUES ('PACIENTE', '47651239', NULL, 'CAMILLA', FALSE, 9, 1, 1, 3, DATE_SUB(NOW(), INTERVAL 2 DAY), 'Ingreso por urgencia', 'ASIGNADA');
 
 INSERT INTO TRASLADO (id_solicitud, id_vehiculo, id_ruta, hora_salida_real, hora_llegada_real, hora_retorno) 
 VALUES (6, 6, 7, DATE_SUB(NOW(), INTERVAL 47 HOUR), DATE_SUB(NOW(), INTERVAL 46 HOUR), DATE_SUB(NOW(), INTERVAL 45 HOUR));
@@ -228,7 +228,7 @@ INSERT INTO HISTORIAL_ESTADO (id_traslado, id_estado, fecha_hora, id_usuario, ob
 
 -- SOLICITUD 7: Traslado cancelado (Ambulatorio)
 INSERT INTO SOLICITUD_TRASLADO (categoria_traslado, ci_paciente, detalle_carga, tipo_movilidad, requiere_soporte_uti, id_origen, id_destino, id_canal, id_usuario_solicit, fecha_solicitud, motivo, estado_solicitud) 
-VALUES ('PACIENTE', '51234567', NULL, 'AMBULATORIO', FALSE, 1, 7, 2, 2, DATE_SUB(NOW(), INTERVAL 1 DAY), 'Consulta externa', 'CANCELADA');
+VALUES ('PACIENTE', '51234567', NULL, 'AMBULATORIO', FALSE, 1, 7, 2, 2, DATE_SUB(NOW(), INTERVAL 1 DAY), 'Consulta externa', 'ASIGNADA');
 
 INSERT INTO TRASLADO (id_solicitud, id_vehiculo, id_ruta) VALUES (7, 2, 6);
 INSERT INTO PERSONAL_TRASLADO (id_traslado, id_personal, rol_en_traslado) VALUES (4, 7, 'CONDUCTOR');

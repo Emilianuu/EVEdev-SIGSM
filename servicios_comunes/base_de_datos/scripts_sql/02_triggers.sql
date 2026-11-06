@@ -230,16 +230,20 @@ FOR EACH ROW
 BEGIN
     DECLARE v_nombre_estado VARCHAR(50);
     DECLARE v_id_solicitud INT;
-    DECLARE v_nuevo_estado_solicitud VARCHAR(20);
 
     SELECT nombre INTO v_nombre_estado FROM ESTADO_TRASLADO WHERE id_estado = NEW.id_estado;
     SELECT id_solicitud INTO v_id_solicitud FROM TRASLADO WHERE id_traslado = NEW.id_traslado;
 
-    IF v_nuevo_estado_solicitud IS NOT NULL THEN
-        UPDATE SOLICITUD_TRASLADO SET estado_solicitud = v_nuevo_estado_solicitud WHERE id_solicitud = v_id_solicitud;
+    -- Actualiza el estado de la Solicitud
+    IF v_nombre_estado = 'COMPLETADO' THEN
+        UPDATE SOLICITUD_TRASLADO SET estado_solicitud = 'COMPLETADA' WHERE id_solicitud = v_id_solicitud;
+    ELSEIF v_nombre_estado = 'CANCELADO' THEN
+        UPDATE SOLICITUD_TRASLADO SET estado_solicitud = 'CANCELADA' WHERE id_solicitud = v_id_solicitud;
+    ELSEIF v_nombre_estado = 'EN_CAMINO' THEN
+        UPDATE SOLICITUD_TRASLADO SET estado_solicitud = 'EN_CAMINO' WHERE id_solicitud = v_id_solicitud;
     END IF;
 
-    -- NUEVO: Ocupa el vehículo solo cuando el traslado inicia realmente
+    -- Ocupa el vehículo solo cuando el traslado inicia realmente
     IF v_nombre_estado = 'EN_CAMINO' THEN
         UPDATE VEHICULO v JOIN TRASLADO t ON t.id_vehiculo = v.id_vehiculo
            SET v.estado_disponibilidad = 'EN_USO'

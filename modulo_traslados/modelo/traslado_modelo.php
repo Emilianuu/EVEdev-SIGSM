@@ -412,18 +412,26 @@ class TrasladoModelo
     public static function actualizarEstado($datos, $id_usuario)
     {
         global $conexion;
+
+        $id_traslado = $datos['id_traslado'] ?? null;
+        $id_estado = $datos['id_estado'] ?? null;
+        $observaciones = $datos['observaciones'] ?? '';
+
+        if (!$id_traslado || !$id_estado) {
+            return ['status' => 'error', 'mensaje' => 'Faltan datos obligatorios para actualizar el estado.'];
+        }
+
         try {
-            $id_traslado = $datos['id_traslado'];
-            $id_estado = $datos['id_estado'];
-            $observaciones = $datos['observaciones'];
+            // El trigger 'trg_historial_propaga_estado' de la BD se encargará 
+            // automáticamente de actualizar la disponibilidad del vehículo y la solicitud.
+            $sql = "INSERT INTO HISTORIAL_ESTADO (id_traslado, id_estado, observaciones, id_usuario) 
+                VALUES (?, ?, ?, ?)";
+            $stmt = $conexion->prepare($sql);
+            $stmt->execute([$id_traslado, $id_estado, $observaciones, $id_usuario]);
 
-            // Insertamos la actualización en la línea de tiempo del traslado
-            $stmt = $conexion->prepare("INSERT INTO HISTORIAL_ESTADO (id_traslado, id_estado, id_usuario, observaciones) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$id_traslado, $id_estado, $id_usuario, $observaciones]);
-
-            return ['status' => 'success', 'mensaje' => 'Estado y observaciones actualizados correctamente.'];
-        } catch (PDOException $e) {
-            return ['status' => 'error', 'mensaje' => 'Error al actualizar el estado: ' . $e->getMessage()];
+            return ['status' => 'success'];
+        } catch (Exception $e) {
+            return ['status' => 'error', 'mensaje' => $e->getMessage()];
         }
     }
 }
