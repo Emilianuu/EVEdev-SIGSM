@@ -15,12 +15,11 @@ INSERT INTO ROL (nombre_rol, descripcion, activo) VALUES
 ('SOLO_LECTURA','Rol dado de baja, ya no se utiliza', FALSE);
 
 INSERT INTO USUARIO (nombre_usuario, contrasena_hash, nombre, apellido, email, activo, fecha_creacion, ultimo_login) VALUES
-('echiessa',  '$2y$10$fakehash1234567890abcdefghijklmno', 'Emiliano', 'Chiessa',    'emiliano603099@gmail.com',  TRUE,  '2026-03-01', '2026-07-28'),
-('egomez',    '$2y$10$fakehash1234567890abcdefghijklmno', 'Ezequiel', 'Gomez',      'ezequielg0o0mez23@gmail.com', TRUE, '2026-03-01', '2026-07-27'),
-('vburgeno',  '$2y$10$fakehash1234567890abcdefghijklmno', 'Valentino','Burgeño',    'valentinoburgeno16@gmail.com', TRUE, '2026-03-02', '2026-07-20'),
-('jizuibejer','$2y$10$fakehash1234567890abcdefghijklmno', 'Juan',     'Izuibejeres','juanmanuelizuibe@gmail.com', TRUE, '2026-03-02', NULL),
-('mrodriguez','$2y$10$fakehash1234567890abcdefghijklmno', 'Marcela',  'Rodríguez',  'mrodriguez.enf@hc.edu.uy',  TRUE,  '2026-04-10', '2026-07-29'),
-('pantiguo',  '$2y$10$fakehash1234567890abcdefghijklmno', 'Pablo',    'Antiguo',    'pantiguo.baja@hc.edu.uy',   FALSE, '2026-02-01', '2026-05-01');
+('echiessa',  '$2y$10$De1CZYXtuMMS3mH9JBTN0uDBCHOavFvlfDOlIclAi5jnNoYvNsgBi', 'Emiliano', 'Chiessa',    'emiliano603099@gmail.com',  TRUE,  '2026-03-01', '2026-07-28'),
+('egomez',    '$2y$10$FDbWJXpiSAa1Lw0dC.hrI.11XjohbQMl0ORvgZxUO5NQ0H19rT6ae', 'Ezequiel', 'Gomez',      'ezequielg0o0mez23@gmail.com', TRUE, '2026-03-01', '2026-07-27'),
+('vburgeno',  '$2y$10$QcB0CEG3TpTd9WJKUvQhbuDtGkePtuIPWiiN.Deck3G6r8LPCFXG2', 'Valentino','Burgeño',    'valentinoburgeno16@gmail.com', TRUE, '2026-03-02', '2026-07-20'),
+('mrodriguez','$2y$10$.E5FUf7bvQfTqa3/dh3VrOXt7nw9VTfmeGwvVlqL.HWAc/JV6PQUC', 'Marcela',  'Rodríguez',  'mrodriguez.enf@hc.edu.uy',  TRUE,  '2026-04-10', '2026-07-29'),
+('pantiguo',  '$2y$10$HgDPXv/ekoOrC/QrMKzGx.CYj//uKIlkInPaH.Oz.O5vreSqynTz6', 'Pablo',    'Antiguo',    'pantiguo.baja@hc.edu.uy',   FALSE, '2026-02-01', '2026-05-01');
 
 INSERT INTO USUARIO_ROL (id_usuario, id_rol, fecha_asignacion) VALUES
 (1, 1, '2026-03-01'),   -- echiessa: ADMIN
