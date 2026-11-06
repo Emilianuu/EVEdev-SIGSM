@@ -16,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once '../../servicios_comunes/conexion_BD/conexion.php';
             require_once '../modelo/documentacion_modelo.php';
 
-            $titulo = $_POST['titulo'] ?? '';
+            $titulo_raw = $_POST['titulo'] ?? '';
+            $titulo = htmlspecialchars(trim($titulo_raw), ENT_QUOTES, 'UTF-8');
             $id_categoria = $_POST['id_categoria'] ?? '';
             $id_usuario = $_SESSION['id_usuario']; // El usuario logueado
 
@@ -100,7 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once '../modelo/documentacion_modelo.php';
 
             $id_documento = $_POST['id_documento'] ?? '';
-            $titulo = $_POST['titulo'] ?? '';
+            $titulo_raw = $_POST['titulo'] ?? '';
+            $titulo = htmlspecialchars(trim($titulo_raw), ENT_QUOTES, 'UTF-8');
             $id_categoria = $_POST['id_categoria'] ?? '';
 
             if (empty($id_documento) || empty($titulo) || empty($id_categoria)) {
