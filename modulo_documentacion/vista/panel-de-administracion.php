@@ -20,7 +20,32 @@ $palabras = explode(' ', trim($nombreSesion));
 $iniciales = '';
 if (isset($palabras[0])) $iniciales .= strtoupper(substr($palabras[0], 0, 1));
 if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
+
+// =======================================================================
+// VALIDACIÓN DE CONTROL DE ACCESO (RBAC)
+// =======================================================================
+require_once __DIR__ . '/../../servicios_comunes/conexion_BD/conexion.php';
+
+$stmtRolesDoc = $conexion->prepare("
+    SELECT r.nombre_rol 
+    FROM ROL r 
+    INNER JOIN USUARIO_ROL ur ON r.id_rol = ur.id_rol 
+    WHERE ur.id_usuario = ? AND r.activo = TRUE
+");
+$stmtRolesDoc->execute([$_SESSION['id_usuario']]);
+$rolesUsuarioDoc = $stmtRolesDoc->fetchAll(PDO::FETCH_COLUMN);
+
+// Solo Admin Global o Administrador de Documentación
+$rolesPermitidosDoc = ['ADMIN', 'ADMIN_DOC'];
+$tieneAccesoDoc = count(array_intersect($rolesUsuarioDoc, $rolesPermitidosDoc)) > 0;
+
+if (!$tieneAccesoDoc) {
+  header("Location: ../../servicios_comunes/vista_general/index.php?error=no_autorizado");
+  exit();
+}
+// =======================================================================
 ?>
+
 <!doctype html>
 <html lang="<?= $idiomaActual ?>">
 

@@ -12,6 +12,7 @@ INSERT INTO ROL (nombre_rol, descripcion, activo) VALUES
 ('ADMIN',       'Acceso total al sistema', TRUE),
 ('OPERADOR',    'Gestiona solicitudes y traslados', TRUE),
 ('ENFERMERO',   'Consulta pacientes y traslados asignados', TRUE),
+('ADMIN_DOC',   'Administrador del módulo de documentación y códigos QR', TRUE),
 ('SOLO_LECTURA','Rol dado de baja, ya no se utiliza', FALSE);
 
 INSERT INTO USUARIO (nombre_usuario, contrasena_hash, nombre, apellido, email, activo, fecha_creacion, ultimo_login) VALUES
@@ -24,9 +25,9 @@ INSERT INTO USUARIO (nombre_usuario, contrasena_hash, nombre, apellido, email, a
 INSERT INTO USUARIO_ROL (id_usuario, id_rol, fecha_asignacion) VALUES
 (1, 1, '2026-03-01'),   -- echiessa: ADMIN
 (2, 2, '2026-03-01'),   -- egomez: OPERADOR
-(3, 2, '2026-03-02'),   -- vburgeno: OPERADOR
-(4, 2, '2026-03-02'),   -- jizuibejer: OPERADOR
-(5, 3, '2026-04-10');   -- mrodriguez: ENFERMERO
+(3, 4, '2026-03-02'),   -- vburgeno: ADMIN_DOC
+(4, 3, '2026-03-02'),   -- mrodriguez: ENFERMERO
+(5, 3, '2026-04-10');   -- panriguo: ENFERMERO
 
 -- ---------------------------------------------------------------------
 -- BLOQUE 2 — CONTENIDOS Y ENCUESTAS

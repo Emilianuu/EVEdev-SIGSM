@@ -56,32 +56,42 @@ if (!isset($_SESSION['id_usuario'])) {
             <h1 class="page-heading"><?= $lang['portal_heading'] ?></h1>
             <p class="page-desc"><?= $lang['portal_desc'] ?></p>
 
-            <div class="modules-grid">
-                <a href="../../modulo_traslados/vista/panel-de-gestion.php" class="module-card" style="--card-accent: var(--accent-traslado)">
-                    <div class="card-icon"><i class="bi bi-truck"></i></div>
-                    <div class="card-body">
-                        <div class="card-label"><?= $lang['tarjeta_traslados_label'] ?></div>
-                        <h2 class="card-title"><?= $lang['tarjeta_traslados_titulo'] ?></h2>
-                        <p class="card-desc"><?= $lang['tarjeta_traslados_desc'] ?></p>
-                    </div>
-                    <div class="card-footer-row">
-                        <i class="bi bi-arrow-right card-arrow"></i>
-                    </div>
-                </a>
+            <!-- CAPTURA DEL ERROR DE PERMISOS -->
+            <?php if (isset($_GET['error']) && $_GET['error'] === 'no_autorizado'): ?>
+                <div class="alert-error" style="max-width: 520px; display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-shield-lock-fill" style="font-size: 1.2rem;"></i>
+                    <span><?= $lang['msg_no_autorizado'] ?? '<strong>Acceso denegado:</strong> No tienes los permisos necesarios para ingresar a este módulo.' ?></span>
+                </div>
+            <?php endif; ?>
 
-                <a href="../../modulo_documentacion/controlador/dashboard_controlador.php" class="module-card" style="--card-accent: var(--accent-admin)">
-                    <div class="card-icon"><i class="bi bi-folder"></i></div>
-                    <div class="card-body">
-                        <div class="card-label"><?= $lang['tarjeta_admin_label'] ?></div>
-                        <h2 class="card-title"><?= $lang['tarjeta_admin_titulo'] ?></h2>
-                        <p class="card-desc"><?= $lang['tarjeta_admin_desc'] ?></p>
-                    </div>
-                    <div class="card-footer-row">
-                        <i class="bi bi-arrow-right card-arrow"></i>
-                    </div>
-                </a>
+            <div class="modules-grid">
+
+                <div class="modules-grid">
+                    <a href="../../modulo_traslados/vista/panel-de-gestion.php" class="module-card" style="--card-accent: var(--accent-traslado)">
+                        <div class="card-icon"><i class="bi bi-truck"></i></div>
+                        <div class="card-body">
+                            <div class="card-label"><?= $lang['tarjeta_traslados_label'] ?></div>
+                            <h2 class="card-title"><?= $lang['tarjeta_traslados_titulo'] ?></h2>
+                            <p class="card-desc"><?= $lang['tarjeta_traslados_desc'] ?></p>
+                        </div>
+                        <div class="card-footer-row">
+                            <i class="bi bi-arrow-right card-arrow"></i>
+                        </div>
+                    </a>
+
+                    <a href="../../modulo_documentacion/controlador/dashboard_controlador.php" class="module-card" style="--card-accent: var(--accent-admin)">
+                        <div class="card-icon"><i class="bi bi-folder"></i></div>
+                        <div class="card-body">
+                            <div class="card-label"><?= $lang['tarjeta_admin_label'] ?></div>
+                            <h2 class="card-title"><?= $lang['tarjeta_admin_titulo'] ?></h2>
+                            <p class="card-desc"><?= $lang['tarjeta_admin_desc'] ?></p>
+                        </div>
+                        <div class="card-footer-row">
+                            <i class="bi bi-arrow-right card-arrow"></i>
+                        </div>
+                    </a>
+                </div>
             </div>
-        </div>
     </main>
 
     <footer><?= $lang['footer_texto'] ?></footer>

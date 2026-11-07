@@ -124,7 +124,32 @@ try {
 } catch (Exception $e) {
   error_log("Error cargando listas dinámicas: " . $e->getMessage());
 }
+require_once __DIR__ . '/../../servicios_comunes/conexion_BD/conexion.php';
+
+// =======================================================================
+// VALIDACIÓN DE CONTROL DE ACCESO (RBAC)
+// =======================================================================
+$stmtRoles = $conexion->prepare("
+    SELECT r.nombre_rol 
+    FROM ROL r 
+    INNER JOIN USUARIO_ROL ur ON r.id_rol = ur.id_rol 
+    WHERE ur.id_usuario = ? AND r.activo = TRUE
+");
+$stmtRoles->execute([$_SESSION['id_usuario']]);
+$rolesUsuario = $stmtRoles->fetchAll(PDO::FETCH_COLUMN);
+
+// Roles permitidos para ver Gestión de Traslados
+$rolesPermitidosGestion = ['ADMIN', 'OPERADOR', 'ENFERMERO'];
+$tieneAcceso = count(array_intersect($rolesUsuario, $rolesPermitidosGestion)) > 0;
+
+if (!$tieneAcceso) {
+  // Si no tiene acceso, lo devolvemos al index o portal con un mensaje de error
+  header("Location: ../../servicios_comunes/vista_general/index.php?error=no_autorizado");
+  exit();
+}
+// =======================================================================
 ?>
+
 <!doctype html>
 <html lang="<?= $idiomaActual ?>">
 

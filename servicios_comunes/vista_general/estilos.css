@@ -399,3 +399,9 @@ input.input-error {
 [data-theme="dark"] .btn-submit {
   background-color: #2563eb;
 }
+
+[data-theme="dark"] .alert-error {
+  background-color: rgba(220, 38, 38, 0.15); /* Fondo rojo semitransparente */
+  color: #fca5a5; /* Texto rojo claro/salmón */
+  border-color: rgba(220, 38, 38, 0.3);
+}
