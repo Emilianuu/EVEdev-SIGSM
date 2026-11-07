@@ -30,14 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $archivo = $_FILES['archivo'];
 
-            // 1. Validar el tamaño máximo
+            // Validar el tamaño máximo
             $max_size = 15 * 1024 * 1024; // 15 MB en bytes
             if ($archivo['size'] > $max_size) {
                 echo json_encode(["status" => "error", "mensaje" => "El archivo supera el tamaño máximo permitido de 15 MB."]);
                 exit();
             }
 
-            // 2. Validar el tipo MIME de forma estricta leyendo la cabecera real del archivo
+            // Validar el tipo MIME de forma estricta leyendo la cabecera real del archivo
             $finfo = new finfo(FILEINFO_MIME_TYPE);
             $mime_real = $finfo->file($archivo['tmp_name']);
 
@@ -69,7 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($resultado) {
                     echo json_encode(["status" => "success", "mensaje" => "Guardado correctamente."]);
                 } else {
-                    echo json_encode(["status" => "error", "mensaje" => "Error al insertar en la base de datos."]);
+                    // Si la BD falla, borramos el PDF huérfano recién subido
+                    if (file_exists($ruta_fisica)) {
+                        unlink($ruta_fisica);
+                    }
+                    echo json_encode(["status" => "error", "mensaje" => "Error al insertar en la base de datos. Se deshizo la subida del archivo."]);
                 }
             } else {
                 echo json_encode(["status" => "error", "mensaje" => "Fallo al mover el archivo en el servidor."]);
@@ -164,6 +168,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($resultado) {
                 echo json_encode(["status" => "success", "mensaje" => "Documento actualizado correctamente."]);
             } else {
+                // Si habíamos subido un archivo nuevo ($ruta_bd no es null) y la BD falla, lo borramos
+                if ($ruta_bd !== null && isset($ruta_fisica) && file_exists($ruta_fisica)) {
+                    unlink($ruta_fisica);
+                }
                 echo json_encode(["status" => "error", "mensaje" => "Error al actualizar la base de datos."]);
             }
             exit();
