@@ -132,7 +132,8 @@ class Documento
     // 8. OBTENER DOCUMENTO POR TOKEN (Para visor público)
     public function obtenerDocumentoPorToken($token)
     {
-        $sql = "SELECT d.id_documento, d.titulo, d.archivo_url, d.codigo_qr, d.fecha_carga, d.activo, c.nombre AS categoria 
+        // Agregamos d.fecha_expiracion_qr al SELECT
+        $sql = "SELECT d.id_documento, d.titulo, d.archivo_url, d.codigo_qr, d.fecha_carga, d.activo, c.nombre AS categoria, d.fecha_expiracion_qr 
                 FROM DOCUMENTO d
                 JOIN CATEGORIA c ON d.id_categoria = c.id_categoria
                 WHERE d.codigo_qr = :token AND d.activo = 1";
@@ -142,5 +143,19 @@ class Documento
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // 9. ACTUALIZAR EXPIRACIÓN DEL QR
+    public function actualizarExpiracionQr($id_documento, $fecha_expiracion)
+    {
+        $sql = "UPDATE DOCUMENTO 
+                SET fecha_expiracion_qr = :fecha_expiracion 
+                WHERE id_documento = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':fecha_expiracion', $fecha_expiracion);
+        $stmt->bindParam(':id', $id_documento, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 }

@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+date_default_timezone_set('America/Montevideo');
+
 // Verificación de sesión obligatoria
 if (!isset($_SESSION['id_usuario'])) {
     header("Location: ../../servicios_comunes/autenticacion/login_controlador.php");
@@ -147,6 +149,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(["status" => "success", "mensaje" => "Documento actualizado correctamente."]);
             } else {
                 echo json_encode(["status" => "error", "mensaje" => "Error al actualizar la base de datos."]);
+            }
+            exit();
+
+        case 'actualizar_expiracion_qr':
+            require_once '../../servicios_comunes/conexion_BD/conexion.php';
+            require_once '../modelo/documentacion_modelo.php';
+
+            $id_documento = $_POST['id_documento'] ?? '';
+            $horas = $_POST['horas'] ?? 'null';
+
+            if (empty($id_documento)) {
+                echo json_encode(["status" => "error", "mensaje" => "ID no proporcionado."]);
+                exit();
+            }
+
+            $fecha_expiracion = null;
+            // Calculamos la fecha y hora exacta sumando las horas enviadas
+            if ($horas !== 'null' && is_numeric($horas)) {
+                $fecha_expiracion = date('Y-m-d H:i:s', strtotime("+$horas hours"));
+            }
+
+            $docModelo = new Documento($conexion);
+            $resultado = $docModelo->actualizarExpiracionQr($id_documento, $fecha_expiracion);
+
+            if ($resultado) {
+                echo json_encode(["status" => "success"]);
+            } else {
+                echo json_encode(["status" => "error", "mensaje" => "Error al actualizar la expiración."]);
             }
             exit();
     }

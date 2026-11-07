@@ -567,10 +567,80 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const btnGenQr = document.getElementById("btnGenerarQr");
-  if (btnGenQr) {
-    btnGenQr.addEventListener("click", generarQr);
-  }
+  if (btnGenerarQr) {
+    btnGenerarQr.addEventListener("click", async () => {
+      const selectDoc = document.getElementById("qr-documento");
+      const docId = selectDoc.value;
+      const selectExp = document.getElementById("qr-expiracion");
+      const expText = selectExp.options[selectExp.selectedIndex].text;
+      const index = selectExp.selectedIndex;
 
+      if (!docId)
+        return showToast(
+          LANG.qr_alerta_seleccione || "Por favor, seleccione un documento",
+          "bi-exclamation-triangle",
+        );
+
+      const d = docs.find((x) => x.id == docId);
+      if (!d) return;
+
+      // Calculamos las horas según la opción elegida en el HTML (0=24h, 1=48h, 2=7d, 3=Nunca)
+      let horas = "null";
+      if (index === 0) horas = 24;
+      else if (index === 1) horas = 48;
+      else if (index === 2) horas = 168; // 7 días * 24 horas
+
+      // 1. Enviamos el plazo al servidor
+      const formData = new FormData();
+      formData.append("accion", "actualizar_expiracion_qr");
+      formData.append("id_documento", docId);
+      formData.append("horas", horas);
+
+      try {
+        const response = await fetch(
+          "../controlador/dashboard_controlador.php",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const data = await response.json();
+
+        if (data.status !== "success") {
+          return alert((LANG.msg_error || "Error: ") + data.mensaje);
+        }
+      } catch (error) {
+        return alert(
+          LANG.doc_error_conexion || "Error de conexión al generar QR.",
+        );
+      }
+
+      // 2. Si se guardó correctamente en BD, mostramos el QR visualmente
+      const origen = window.location.origin;
+      const rutaProyecto = window.location.pathname.split(
+        "/modulo_documentacion/",
+      )[0];
+      const linkPublico = `${origen}${rutaProyecto}/modulo_documentacion/vista/visor_publico.php?t=${d.token}`;
+
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(linkPublico)}`;
+
+      const qrContainer = document.querySelector(".qr-result-img-wrapper");
+      qrContainer.innerHTML = `<img src="${qrApiUrl}" alt="QR" style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px;" />`;
+
+      document.getElementById("qr-result-doc-title").textContent = d.titulo;
+      document.getElementById("qr-result-desc").textContent = expText;
+
+      document.getElementById("qr-empty").style.display = "none";
+      const qrResult = document.getElementById("qr-result");
+      qrResult.classList.remove("hidden-by-default");
+      qrResult.style.display = "block";
+
+      showToast(
+        LANG.qr_toast_generado || "Código QR generado y configurado",
+        "bi-qr-code",
+      );
+    });
+  }
   cargarDocumentosServidor();
 
   const btnEditDoc = document.getElementById("btnEditDoc");

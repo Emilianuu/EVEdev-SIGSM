@@ -76,6 +76,7 @@ CREATE TABLE DOCUMENTO (
     titulo VARCHAR(150) NOT NULL,
     archivo_url VARCHAR(255) NOT NULL,
     codigo_qr VARCHAR(255) NULL,
+    fecha_expiracion_qr DATETIME NULL,
     fecha_carga DATE NOT NULL DEFAULT(CURRENT_DATE),
     id_categoria INT NOT NULL,
     id_usuario_carga INT NOT NULL,

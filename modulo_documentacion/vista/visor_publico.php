@@ -13,6 +13,26 @@ $documento = $docModelo->obtenerDocumentoPorToken($token);
 if (!$documento || !file_exists($documento['archivo_url'])) {
     die("El documento físico no se encuentra disponible o fue retirado.");
 }
+
+$documento = $docModelo->obtenerDocumentoPorToken($token);
+
+// Validamos que exista, esté activo y tenga el archivo físico
+if (!$documento || !file_exists($documento['archivo_url'])) {
+    die("El documento físico no se encuentra disponible o fue retirado.");
+}
+
+// Validar si la fecha del código QR ya expiró
+if (!empty($documento['fecha_expiracion_qr'])) {
+    $fechaExpiracion = new DateTime($documento['fecha_expiracion_qr']);
+    $ahora = new DateTime();
+
+    if ($ahora > $fechaExpiracion) {
+        http_response_code(403);
+        die("<h2>Acceso denegado</h2><p>El acceso mediante este código QR ha expirado por motivos de seguridad.</p>");
+    }
+}
+?>
+<!-- Resto del HTML (doctype, iframe, etc) -->
 ?>
 <!DOCTYPE html>
 <html lang="es">
