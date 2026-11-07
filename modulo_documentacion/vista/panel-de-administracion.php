@@ -502,6 +502,18 @@ if (isset($palabras[1])) $iniciales .= strtoupper(substr($palabras[1], 0, 1));
     </div>
   </div>
 
+  <!-- ── MODAL ALERTA ─────────── -->
+  <div class="qr-modal-overlay" id="modalAlertOverlay">
+    <div class="qr-modal" style="max-width: 400px; padding: 30px;">
+      <i id="modalAlertIcon" class="bi bi-exclamation-octagon" style="font-size: 3rem; color: var(--hc-red); display: block; margin-bottom: 15px;"></i>
+      <h3 style="margin-bottom: 10px;" id="modalAlertTitle"><?= $lang['modal_alerta_titulo'] ?? 'Atención' ?></h3>
+      <p style="margin-bottom: 25px; color: var(--hc-gray-600);" id="modalAlertMessage"></p>
+      <div style="display: flex; justify-content: center;">
+        <button class="btn-hc btn-hc-primary" id="btnModalAlertOk"><?= $lang['modal_btn_aceptar'] ?? 'Aceptar' ?></button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── MODAL ELIMINAR ─────────── -->
   <div class="qr-modal-overlay" id="modalEliminarOverlay">
     <div class="qr-modal" style="max-width: 400px; padding: 30px;">

@@ -287,7 +287,7 @@ async function saveDoc() {
   const fileInput = document.getElementById("hiddenFileInput");
 
   if (!titulo || !idCategoria) {
-    alert(
+    showCustomAlert(
       LANG.doc_alerta_campos ||
         "Por favor, ingrese el título y seleccione una categoría.",
     );
@@ -295,7 +295,7 @@ async function saveDoc() {
   }
 
   if (fileInput.files.length === 0) {
-    alert(LANG.doc_alerta_archivo || "Debe adjuntar un archivo PDF.");
+    showCustomAlert(LANG.doc_alerta_archivo || "Debe adjuntar un archivo PDF.");
     return;
   }
 
@@ -329,10 +329,10 @@ async function saveDoc() {
       cargarDocumentosServidor();
       setAdminView("view-documentos");
     } else {
-      alert((LANG.msg_error || "Error: ") + data.mensaje);
+      showCustomAlert((LANG.msg_error || "Error: ") + data.mensaje);
     }
   } catch (error) {
-    alert(LANG.doc_error_conexion || "Ocurrió un error de conexión.");
+    showCustomAlert(LANG.doc_error_conexion || "Ocurrió un error de conexión.");
   }
 }
 // ── Generador de Accesos QR ──────────────────────────────────────────
@@ -393,11 +393,40 @@ function showToast(msg, icon) {
   toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
 }
 
+// ── Alerta Personalizada ─────────────────────────────────────────────
+function showCustomAlert(message, isError = true) {
+  const overlay = document.getElementById("modalAlertOverlay");
+  if (!overlay) {
+    alert(message); // Fallback por si el HTML no cargó
+    return;
+  }
+
+  document.getElementById("modalAlertMessage").textContent = message;
+
+  const icon = document.getElementById("modalAlertIcon");
+  if (isError) {
+    icon.className = "bi bi-exclamation-octagon";
+    icon.style.color = "var(--hc-red)";
+  } else {
+    icon.className = "bi bi-info-circle";
+    icon.style.color = "var(--hc-blue)";
+  }
+
+  overlay.classList.add("open");
+}
+
 // ── Bind Events & Init ────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
   const sidebarOverlay = document.getElementById("sidebar-overlay");
   if (sidebarOverlay) {
     sidebarOverlay.addEventListener("click", closeMobileSidebar);
+  }
+
+  const btnModalAlertOk = document.getElementById("btnModalAlertOk");
+  if (btnModalAlertOk) {
+    btnModalAlertOk.addEventListener("click", () => {
+      document.getElementById("modalAlertOverlay").classList.remove("open");
+    });
   }
 
   const btnLogin = document.getElementById("btnLogin");
@@ -527,10 +556,10 @@ document.addEventListener("DOMContentLoaded", function () {
           docToDelete = null;
           cargarDocumentosServidor();
         } else {
-          alert((LANG.msg_error || "Error: ") + data.mensaje);
+          showCustomAlert((LANG.msg_error || "Error: ") + data.mensaje);
         }
       } catch (error) {
-        alert(
+        showCustomAlert(
           LANG.modal_error_conexion ||
             "Error de conexión al intentar eliminar.",
         );
@@ -607,10 +636,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = await response.json();
 
         if (data.status !== "success") {
-          return alert((LANG.msg_error || "Error: ") + data.mensaje);
+          return showCustomAlert((LANG.msg_error || "Error: ") + data.mensaje);
         }
       } catch (error) {
-        return alert(
+        return showCustomAlert(
           LANG.doc_error_conexion || "Error de conexión al generar QR.",
         );
       }
@@ -696,7 +725,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const idCat = document.getElementById("ed-categoria").value;
 
       if (!titulo || !idCat)
-        return alert(
+        return showCustomAlert(
           LANG.doc_alerta_campos || "Ingrese un título y categoría.",
         );
 
@@ -724,10 +753,10 @@ document.addEventListener("DOMContentLoaded", function () {
           await cargarDocumentosServidor();
           openDocumento(id);
         } else {
-          alert((LANG.msg_error || "Error: ") + data.mensaje);
+          showCustomAlert((LANG.msg_error || "Error: ") + data.mensaje);
         }
       } catch (err) {
-        alert(
+        showCustomAlert(
           LANG.doc_error_editar || "Ocurrió un error de conexión al editar.",
         );
       }

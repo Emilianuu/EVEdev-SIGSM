@@ -30,9 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $archivo = $_FILES['archivo'];
 
-            // Validar que sea un PDF
-            if ($archivo['type'] !== 'application/pdf') {
-                echo json_encode(["status" => "error", "mensaje" => "Solo se permiten archivos PDF."]);
+            // 1. Validar el tamaño máximo
+            $max_size = 15 * 1024 * 1024; // 15 MB en bytes
+            if ($archivo['size'] > $max_size) {
+                echo json_encode(["status" => "error", "mensaje" => "El archivo supera el tamaño máximo permitido de 15 MB."]);
+                exit();
+            }
+
+            // 2. Validar el tipo MIME de forma estricta leyendo la cabecera real del archivo
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime_real = $finfo->file($archivo['tmp_name']);
+
+            if ($mime_real !== 'application/pdf') {
+                echo json_encode(["status" => "error", "mensaje" => "El archivo físico no es un PDF válido o está corrupto."]);
                 exit();
             }
 
@@ -118,10 +128,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
                 $archivo = $_FILES['archivo'];
 
-                if ($archivo['type'] !== 'application/pdf') {
-                    echo json_encode(["status" => "error", "mensaje" => "Solo se permiten archivos PDF."]);
+                // Validar el tamaño máximo
+                $max_size = 15 * 1024 * 1024; // 15 MB en bytes
+                if ($archivo['size'] > $max_size) {
+                    echo json_encode(["status" => "error", "mensaje" => "El archivo supera el tamaño máximo permitido de 15 MB."]);
                     exit();
                 }
+
+                // Validar el tipo MIME de forma estricta
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime_real = $finfo->file($archivo['tmp_name']);
 
                 $directorio_destino = '../archivos/';
                 if (!is_dir($directorio_destino)) {
