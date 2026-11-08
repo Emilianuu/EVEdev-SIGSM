@@ -8,149 +8,127 @@ S.I.G.S.M. es un sistema de gestión desarrollado para optimizar la administraci
 
 El núcleo del sistema se ha construido seleccionando tecnologías robustas que garantizan estabilidad y un rendimiento óptimo en un entorno web:
 
-- **Backend:** PHP (Hypertext Preprocessor)
+- **Backend:** PHP (Apache)
 - **Base de Datos:** MySQL / MariaDB
 - **Frontend:** HTML5, CSS3 y JavaScript (ES6+)
-- **Servidor Web:** Apache / Nginx
+- **Infraestructura y Contenedores:** Docker, Docker Compose y Bash Scripting
 - **Control de Versiones:** Git
 
 ---
 
 ## Justificación Tecnológica (Arquitectura)
 
-La selección de la arquitectura de este proyecto se basa en la robustez y la seguridad en el manejo de la información:
+La selección de la arquitectura de este proyecto se basa en la robustez, seguridad y portabilidad, integrando tanto el desarrollo FullStack como la Administración de Sistemas:
 
 ### Procesamiento del Lado del Servidor (Backend con PHP)
 
 A diferencia de los scripts del lado del cliente, **el código de S.I.G.S.M. se ejecuta íntegramente en el servidor**. Esto aporta ventajas críticas para el sistema:
 
-- **Seguridad Absoluta del Código:** El servidor procesa la lógica y genera el HTML que se envía al cliente. El usuario final solo recibe el resultado del script, sin tener ningún medio de acceso al código fuente que produjo dicho resultado, protegiendo las reglas de negocio.
+- **Seguridad Absoluta del Código:** El servidor procesa la lógica y genera el HTML que se envía al cliente. El usuario final solo recibe el resultado del script, sin tener ningún medio de acceso al código fuente que produjo dicho resultado.
 - **Gestión Eficiente:** Permite una integración nativa y fluida con el sistema de bases de datos para la persistencia de información y un manejo seguro de las sesiones de usuario.
+
+### Entorno Containerizado y Sistema Operativo (DevOps / SysAdmin)
+
+El sistema está empaquetado utilizando Docker para garantizar la paridad entre entornos (desarrollo, pruebas y producción) y preparar el sistema para su exportación como Appliance Virtual (.ova) para el Hospital de Clínicas.
+
+- **Aislamiento:** Servicios de PHP/Apache y MariaDB separados y orquestados mediante `docker-compose.yml`.
+- **Configuración Optimizada:** Archivos `php.ini` a medida para permitir la carga de documentos pesados y control del OPcache.
+- **Administración del SO:** Scripts automatizados en Bash para gestionar respaldos, auditoría de logs, usuarios, grupos y reglas de firewall en el servidor anfitrión.
 
 ---
 
 ## Estructura del Proyecto
 
-A continuación se detalla la organización de archivos y directorios de la raíz del proyecto:
+A continuación se detalla la organización de archivos y directorios en la raíz del repositorio, la cual refleja tanto el código fuente como la infraestructura:
 
 ```text
 .
-├── modulo_documentacion/             # Módulo de gestión documental
-│   ├── controlador/                  # Lógica y manejo de peticiones de documentación
-│   ├── modelo/                       # Consultas y persistencia de datos de documentación
-│   └── vista/                        # Interfaz gráfica de documentación
-│       └── assets/                   # Recursos estáticos
-│           ├── css/                  # Estilos específicos del módulo
-│           ├── img/                  # Imágenes del módulo
-│           └── js/                   # Scripts cliente del módulo
-├── modulo_traslados/                 # Módulo de gestión de traslados
-│   ├── controlador/                  # Lógica del módulo de traslados
-│   ├── modelo/                       # Persistencia de datos de traslados
-│   └── vista/                        # Vistas del módulo de traslados
-│       └── assets/
-│           ├── css/
-│           ├── img/
-│           └── js/
-└── servicios_comunes/                # Lógica global y componentes compartidos
-    ├── autenticacion/                # Gestión de login, logout y sesiones
-    ├── base_de_datos/                # Scripts SQL (estructuras, tablas y cargas iniciales)
-    ├── conexion_BD/                  # Configuración y conexión centralizada a MySQL
-    ├── documentacion/                # Documentación técnica general
-    ├── permisos/                     # Control de acceso y roles de usuario
-    ├── seguridad/                    # Sanitización y mecanismos de protección
-    ├── validaciones/                 # Reglas globales para la validación de datos
-    └── vista_general/                # Plantillas principales, layouts y componentes transversales
+├── docker-compose.yml           # Orquestación de contenedores y servicios
+├── menu.sh                      # Script principal de gestión del SO anfitrión
+├── README.md                    # Documentación principal del proyecto
+├── .env                         # Variables de entorno (Plantilla local)
+├── mariadb/                     # INFRAESTRUCTURA DE BASE DE DATOS
+│   ├── Dockerfile               # Imagen personalizada de MariaDB
+│   ├── scripts_sql/             # DDL, Triggers y DML para inicialización automática
+│   └── documentacion_BD/        # Diagramas DER y documentación de datos
+├── php/                         # APLICACIÓN FULLSTACK (Backend/Frontend)
+│   ├── Dockerfile               # Imagen de PHP-Apache con extensiones requeridas
+│   ├── php.ini                  # Configuración personalizada del motor PHP
+│   ├── index.php                # Punto de entrada de la aplicación
+│   ├── modulo_documentacion/    # Módulo de gestión documental (MVC)
+│   ├── modulo_traslados/        # Módulo de gestión de traslados (MVC)
+│   └── servicios_comunes/       # Lógica global compartida y vistas generales
+└── scripts/                     # SCRIPTS DE ADMINISTRACIÓN DE SISTEMAS (Linux)
+    ├── firewall.sh              # Reglas de iptables/ufw
+    ├── grupos.sh                # Gestión de grupos del sistema
+    ├── logs.sh                  # Rotación y análisis de bitácoras
+    ├── respaldos.sh             # Automatización de copias de seguridad
+    └── usuarios.sh              # Gestión de usuarios del SO
 ```
 
 ---
 
-## Instalación y Configuración Local
+## Instalación y Configuración con Docker (Recomendada)
 
-Sigue paso a paso las siguientes instrucciones para desplegar el proyecto en un entorno local de desarrollo:
+El uso de Docker es el método oficial para desplegar S.I.G.S.M., ya que automatiza la configuración del servidor, la base de datos y la persistencia de archivos.
 
 ### Pre-requisitos
 
-1. Servidor web local con soporte para PHP (versión 7.4 u 8.x) y servidor de base de datos MySQL / MariaDB:
-   - **XAMPP**, **WampServer**, **Laragon** o entorno **LAMP/LEMP**.
-2. **Git** instalado en tu sistema.
+1. **Docker** y **Docker Compose** instalados en el sistema anfitrión.
+2. **Git** instalado.
+
+### Pasos de Despliegue
+
+1. **Clonar el repositorio:**
+
+   ```bash
+   git clone https://github.com/tu-usuario/nombre-repositorio.git
+   cd nombre-repositorio
+   ```
+
+2. **Configurar Variables de Entorno:**
+   Asegúrate de configurar el archivo `.env` en la raíz del proyecto basándote en la plantilla `.env.example` proporcionada. Debe contener las credenciales seguras para MariaDB.
+
+3. **Levantar los contenedores:**
+   Ejecuta el siguiente comando en la raíz del proyecto para construir y levantar los servicios en segundo plano:
+
+   ```bash
+   docker-compose up -d --build
+   ```
+
+4. **Acceso al Sistema:**
+   Una vez que los contenedores estén en ejecución, la base de datos se inicializará automáticamente consumiendo los scripts en `mariadb/scripts_sql/`.
+   Accede a la aplicación a través de tu navegador apuntando al servidor.
+
+### Notas sobre Persistencia
+
+El archivo `docker-compose.yml` está configurado con volúmenes físicos para garantizar la retención de datos. La base de datos y los archivos adjuntos no se perderán al reiniciar o destruir los contenedores.
 
 ---
 
-### Pasos de Instalación Íntegra
+## Instalación Local Tradicional (Alternativa manual)
 
-#### 1. Clonar el repositorio
+Si necesitas instalar el proyecto de forma nativa en un servidor LAMP/XAMPP/Laragon.
 
-Abre una terminal/consola de comandos y navega hasta el directorio raíz de tu servidor web (por ejemplo, `htdocs` en XAMPP o `www` en WampServer/Laragon):
-
-```bash
-cd /ruta/a/tu/htdocs
-git clone https://github.com/tu-usuario/nombre-repositorio.git .
-```
-
-#### 2. Configurar la Base de Datos
-
-1. Inicia los servicios de **Apache** y **MySQL** desde el panel de control de tu entorno local (XAMPP/Wamp/Laragon).
-2. Accede a **phpMyAdmin** (usualmente en `http://localhost/phpmyadmin`) o utiliza tu cliente SQL de preferencia (DBeaver, MySQL Workbench, HeidiSQL).
-3. Crea una nueva base de datos llamada `sigsm` con cotejamiento `utf8mb4_unicode_ci`.
-4. Importa los archivos SQL ubicados en la carpeta `servicios_comunes/base_de_datos/` **respetando el siguiente orden estricto de ejecución**:
-
-   _Vía línea de comandos:_
-
-   ```bash
-   mysql -u root -p -e "CREATE DATABASE sigsm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-   mysql -u root -p sigsm < servicios_comunes/base_de_datos/01_ddl_tablas.sql
-   mysql -u root -p sigsm < servicios_comunes/base_de_datos/02_triggers.sql
-   mysql -u root -p sigsm < servicios_comunes/base_de_datos/03_dml_datos_prueba.sql
-   mysql -u root -p sigsm < servicios_comunes/base_de_datos/04_pruebas_restricciones.sql
-   ```
-
-#### 3. Configurar la Conexión a la Base de Datos
-
-1. Dirígete al directorio `servicios_comunes/conexion_BD/`.
-2. Revisa y edita el archivo de conexión especificando los datos de tu entorno local:
-
-```php
-<?php
-$host = "localhost";
-$usuario = "root";
-$password = ""; // Contraseña de tu MySQL local
-$database = "sigsm";
-?>
-```
-
-#### 4. Ejecutar la Aplicación
-
-Abre tu navegador web e ingresa a la siguiente URL según la ubicación del proyecto en tu servidor local:
-
-```text
-http://localhost/nombre-repositorio/
-```
+1. Clona el repositorio y apunta el _Document Root_ de tu servidor Apache a la carpeta `php/`.
+2. Accede a tu gestor de base de datos local y crea la base `sigsm` (cotejamiento `utf8mb4_unicode_ci`).
+3. Importa los scripts SQL ubicados en `mariadb/scripts_sql/` respetando su orden numérico (01, 02, 03...).
+4. Configura `php/servicios_comunes/conexion_BD/conexion.php` con tus credenciales locales.
+5. **Importante:** Asegúrate de configurar tu `php.ini` local aumentando `upload_max_filesize` y `post_max_size`.
 
 ---
 
 ## Convenciones de Commits
 
-Para mantener un historial de versiones limpio, legible y estructurado, el equipo de desarrollo adopta la especificación de **Conventional Commits**.
-
-### Estructura del Mensaje
-
-Cada mensaje de commit debe seguir el siguiente formato:
-
-```text
-<tipo>(<alcance opcional>): <descripción corta en presente o infinitivo>
-
-[cuerpo opcional explicativo]
-```
-
-### Tipos Permitidos (`<tipo>`)
+Para mantener un historial de versiones limpio, legible y estructurado, adoptamos la especificación de **Conventional Commits**.
 
 | Tipo       | Descripción                                                             | Ejemplo                                                       |
 | :--------- | :---------------------------------------------------------------------- | :------------------------------------------------------------ |
-| `feat`     | Incorporación de una nueva funcionalidad.                               | `feat(encuestas): agregar módulo de encuestas y vistas`       |
+| `feat`     | Incorporación de una nueva funcionalidad o script.                      | `feat(scripts): agregar automatización de respaldos`          |
 | `fix`      | Corrección de un error o bug en el código.                              | `fix(conexion_BD): corregir parámetro de conexión a MySQL`    |
-| `docs`     | Cambios exclusivamente en la documentación (ej. README).                | `docs: actualizar estructura del proyecto en README`          |
+| `docs`     | Cambios exclusivamente en la documentación.                             | `docs: actualizar estructura del proyecto en README`          |
 | `style`    | Cambios que no afectan la lógica (espacios, formato, punto y coma).     | `style(traslados): ajustar estilos CSS en módulo traslados`   |
 | `refactor` | Reestructuración de código sin cambiar comportamiento ni corregir bugs. | `refactor(autenticacion): optimizar verificación de sesiones` |
-| `perf`     | Cambios orientados a mejorar el rendimiento.                            | `perf(seguridad): optimizar consultas SQL de permisos`        |
+| `perf`     | Cambios orientados a mejorar el rendimiento.                            | `perf(docker): optimizar caché de capas en Dockerfile`        |
 | `test`     | Añadir o corregir pruebas unitarias/integración.                        | `test(validaciones): agregar pruebas para entrada de datos`   |
-| `chore`    | Tareas de mantenimiento, actualización de scripts o herramientas.       | `chore: actualizar ignorados en .gitignore`                   |
+| `chore`    | Tareas de mantenimiento, actualización de scripts o herramientas.       | `chore: integrar estructura completa de infraestructura`      |

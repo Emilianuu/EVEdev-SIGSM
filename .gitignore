@@ -1,4 +1,7 @@
 # --- Entorno local y servidor ---
+*.env
+/mariadb/mysql_data/
+/php/modulo_documentacion/archivos/
 .idea/
 .vscode/
 *.swp

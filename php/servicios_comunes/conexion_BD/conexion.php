@@ -2,10 +2,11 @@
 
 date_default_timezone_set('America/Montevideo');
 
-$host = "localhost";
-$usuario = "root";
-$password = "";
-$database = "sigsm";
+// getenv() lee la variable de entorno. Si no existe, usa el valor después del '?:'
+$host = getenv('DB_HOST') ?: 'localhost';
+$usuario = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASSWORD') ?: '';
+$database = getenv('DB_NAME') ?: 'sigsm';
 
 try {
 

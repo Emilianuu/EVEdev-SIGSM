@@ -1,0 +1,31 @@
+services:
+  php:
+    build:
+      context: ./php
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      - mariadb
+    volumes:
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - sigsm_archivos:/var/www/html/modulo_documentacion/archivos
+
+  mariadb:
+    build:
+      context: ./mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_DATABASE}
+    ports:
+      - "3306:3306"
+    volumes:
+      - sigsm_db:/var/lib/mysql
+
+volumes:
+  sigsm_db:
+  sigsm_archivos:
