@@ -11,7 +11,7 @@
 | **Integrante**     | 5771900-0 | Burgeño  | Valentino | valentinoburgeno16@gmail.com |
 
 **I.S.B.O.** **Docente:** Acosta, Fabián  
-**Fecha de culminación:** 02/09/26  
+**Fecha de culminación:** 09/11/26  
 **SEGUNDA ENTREGA** | **3°MJ**
 
 [Descargar Documentación DER (PDF)](./Documentacion_DER.pdf)
